@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout - ReggieMercy Shop{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>Checkout</h2>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Shipping Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form.shipping_address.label_tag }}
+                        {{ form.shipping_address }}
+                        {% if form.shipping_address.errors %}
+                        <div class="text-danger">
+                            {{ form.shipping_address.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Payment Method</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {{ form.payment_method.label_tag }}
+                        {{ form.payment_method }}
+                        {% if form.payment_method.errors %}
+                        <div class="text-danger">
+                            {{ form.payment_method.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-check"></i> Place Order
+            </button>
+            <a href="{% url 'view_cart' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Cart
+            </a>
+        </form>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Order Summary</h5>
+            </div>
+            <div class="card-body">
+                {% for item in cart.items.all %}
+                <div class="d-flex justify-content-between mb-2">
+                    <div>
+                        <small>{{ item.product.name }} (x{{ item.quantity }})</small>
+                    </div>
+                    <div>
+                        <small>Rp. {{ item.get_total_price }}</small>
+                    </div>
+                </div>
+                {% endfor %}
+                <hr>
+                <div class="d-flex justify-content-between">
+                    <strong>Total:</strong>
+                    <strong>Rp. {{ cart.get_total_price }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
