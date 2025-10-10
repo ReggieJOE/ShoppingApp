@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}{% if category %}{{ category.name }}{% else %}All Products{% endif %} - ReggieMercy Shop{% endblock %}
+{% block title %}{% if category %}{{ category.name }}{% else %}All Products{% endif %} - ReggieMercy{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -11,12 +11,12 @@
             </div>
             <div class="card-body">
                 <div class="list-group">
-                    <a href="{% url 'product_list' %}" 
+                    <a href="{% url 'product_list' %}"
                        class="list-group-item list-group-item-action {% if not category %}active{% endif %}">
                         All Products
                     </a>
                     {% for cat in categories %}
-                    <a href="{% url 'product_list_by_category' cat.id %}" 
+                    <a href="{% url 'product_list_by_category' cat.id %}"
                        class="list-group-item list-group-item-action {% if category and category.id == cat.id %}active{% endif %}">
                         {{ cat.name }}
                     </a>
@@ -28,15 +28,19 @@
 
     <div class="col-md-9">
         <h2>{% if category %}{{ category.name }}{% else %}All Products{% endif %}</h2>
-        
+
         <div class="row">
             {% for product in products %}
             <div class="col-md-4 mb-4">
                 <div class="card h-100">
                     {% if product.image %}
-                    <img src="{{ product.image.url }}" class="card-img-top product-image" alt="{{ product.name }}">
+                    <img src="{{ product.image.url }}" class="card-img-top product-image" alt="{{ product.name }}"
+                         style="height: 200px; object-fit: cover;">
                     {% else %}
-                    <img src="https://via.placeholder.com/200" class="card-img-top product-image" alt="No image">
+                    <div class="card-img-top product-image bg-light d-flex align-items-center justify-content-center"
+                         style="height: 200px;">
+                        <i class="fas fa-image fa-2x text-muted"></i>
+                    </div>
                     {% endif %}
                     <div class="card-body">
                         <h6 class="card-title">{{ product.name }}</h6>
@@ -58,7 +62,7 @@
                         </a>
                         {% endif %}
                         <a href="{% url 'product_detail' product.id %}" class="btn btn-outline-secondary btn-sm">
-                            View Details
+                            <i class="fas fa-search"></i> View Details
                         </a>
                     </div>
                 </div>

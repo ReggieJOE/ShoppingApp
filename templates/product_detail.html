@@ -1,74 +1,175 @@
 {% extends 'base.html' %}
 
-{% block title %}{% if category %}{{ category.name }}{% else %}All Products{% endif %} - ReggieMercy Shop{% endblock %}
+{% block title %}
+{{ product.name }} - ReggieMercy{% endblock %}
 
 {% block content %}
 <div class="row">
-    <div class="col-md-3">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h5>Categories</h5>
+    <!-- Product Image with Zoom -->
+    <div class="col-md-6">
+        <div class="product-image-container">
+            {% if product.image %}
+            <img src="{{ product.image.url }}"
+                 class="img-fluid rounded product-detail-image"
+                 alt="{{ product.name }}"
+                 id="productImage"
+                 style="cursor: zoom-in; max-height: 500px; width: 100%; object-fit: cover;"
+                 data-bs-toggle="modal"
+                 data-bs-target="#imageModal">
+            {% else %}
+            <div class="bg-light d-flex align-items-center justify-content-center rounded"
+                 style="height: 400px;">
+                <i class="fas fa-image fa-4x text-muted"></i>
             </div>
-            <div class="card-body">
-                <div class="list-group">
-                    <a href="{% url 'product_list' %}" 
-                       class="list-group-item list-group-item-action {% if not category %}active{% endif %}">
-                        All Products
-                    </a>
-                    {% for cat in categories %}
-                    <a href="{% url 'product_list_by_category' cat.id %}" 
-                       class="list-group-item list-group-item-action {% if category and category.id == cat.id %}active{% endif %}">
-                        {{ cat.name }}
-                    </a>
-                    {% endfor %}
-                </div>
+            {% endif %}
+        </div>
+
+        <!-- Thumbnail Gallery (if you have multiple images) -->
+        <div class="row mt-3">
+            <div class="col-3">
+                {% if product.image %}
+                <img src="{{ product.image.url }}"
+                     class="img-thumbnail thumbnail"
+                     style="cursor: pointer; height: 80px; object-fit: cover;"
+                     onclick="changeImage('{{ product.image.url }}')">
+                {% endif %}
             </div>
         </div>
     </div>
 
-    <div class="col-md-9">
-        <h2>{% if category %}{{ category.name }}{% else %}All Products{% endif %}</h2>
-        
-        <div class="row">
-            {% for product in products %}
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                    {% if product.image %}
-                    <img src="{{ product.image.url }}" class="card-img-top product-image" alt="{{ product.name }}">
-                    {% else %}
-                    <img src="https://via.placeholder.com/200" class="card-img-top product-image" alt="No image">
-                    {% endif %}
-                    <div class="card-body">
-                        <h6 class="card-title">{{ product.name }}</h6>
-                        <p class="card-text text-muted small">{{ product.description|truncatewords:15 }}</p>
-                        <p class="card-text"><strong>Rp. {{ product.price }}</strong></p>
-                        {% if product.calories %}
-                        <small class="text-muted">{{ product.calories }} cal</small>
-                        {% endif %}
-                        <div class="mt-2">
-                            <span class="badge {% if product.stock > 10 %}bg-success{% else %}bg-warning{% endif %}">
-                                Stock: {{ product.stock }}
-                            </span>
-                        </div>
+    <!-- Product Details -->
+    <div class="col-md-6">
+        <h2>{{ product.name }}</h2>
+        <p class="text-muted">Category: {{ product.category.name }}</p>
+
+        <h3 class="text-primary mb-3">Rp. {{ product.price }}</h3>
+
+        {% if product.calories %}
+        <p><strong>Calories:</strong> {{ product.calories }} cal</p>
+        {% endif %}
+
+        <p><strong>Availability:</strong>
+            <span class="badge {% if product.stock > 10 %}bg-success{% else %}bg-warning{% endif %} fs-6">
+                {{ product.stock }} in stock
+            </span>
+        </p>
+
+        <div class="product-description mb-4">
+            <h5>Description</h5>
+            <p class="text-muted">{{ product.description }}</p>
+        </div>
+
+        {% if user.is_authenticated %}
+            {% if product.stock > 0 %}
+            <div class="add-to-cart-section">
+                <form method="post" action="{% url 'add_to_cart' product.id %}" class="row g-3 align-items-center">
+                    {% csrf_token %}
+                    <div class="col-auto">
+                        <label for="quantity" class="form-label"><strong>Quantity:</strong></label>
                     </div>
-                    <div class="card-footer">
-                        {% if user.is_authenticated %}
-                        <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary btn-sm">
+                    <div class="col-auto">
+                        <input type="number" id="quantity" name="quantity" value="1"
+                               min="1" max="{{ product.stock }}" class="form-control" style="width: 100px;">
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary btn-lg">
                             <i class="fas fa-cart-plus"></i> Add to Cart
-                        </a>
-                        {% endif %}
-                        <a href="{% url 'product_detail' product.id %}" class="btn btn-outline-secondary btn-sm">
-                            View Details
-                        </a>
+                        </button>
                     </div>
-                </div>
+                </form>
             </div>
-            {% empty %}
-            <div class="col-12">
-                <div class="alert alert-info">No products found in this category.</div>
-            </div>
-            {% endfor %}
+            {% else %}
+            <button class="btn btn-secondary btn-lg" disabled>
+                <i class="fas fa-times-circle"></i> Out of Stock
+            </button>
+            {% endif %}
+        {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Please <a href="{% url 'login' %}">login</a> to add items to your cart.
+        </div>
+        {% endif %}
+
+        <div class="product-features mt-4">
+            <h5>Product Features</h5>
+            <ul class="list-unstyled">
+                <li><i class="fas fa-check text-success"></i> Free shipping on orders over Rp. 500.000</li>
+                <li><i class="fas fa-check text-success"></i> 30-day return policy</li>
+                <li><i class="fas fa-check text-success"></i> Secure payment</li>
+                <li><i class="fas fa-check text-success"></i> Customer support</li>
+            </ul>
+        </div>
+
+        <div class="mt-4">
+            <a href="{% url 'product_list_by_category' product.category.id %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> More {{ product.category.name }}
+            </a>
+            <a href="{% url 'product_list' %}" class="btn btn-outline-primary">
+                <i class="fas fa-home"></i> All Products
+            </a>
         </div>
     </div>
 </div>
+
+<!-- Image Modal for Zoom -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel">{{ product.name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                {% if product.image %}
+                <img src="{{ product.image.url }}" class="img-fluid" alt="{{ product.name }}" id="modalImage">
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.product-detail-image:hover {
+    transform: scale(1.02);
+    transition: transform 0.3s ease;
+}
+
+.thumbnail:hover {
+    border-color: #007bff;
+    transform: scale(1.1);
+    transition: all 0.2s ease;
+}
+
+.add-to-cart-section {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+}
+
+.product-features {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+}
+</style>
+
+<script>
+function changeImage(imageUrl) {
+    document.getElementById('productImage').src = imageUrl;
+    document.getElementById('modalImage').src = imageUrl;
+}
+
+// Add smooth zoom effect
+document.addEventListener('DOMContentLoaded', function() {
+    const productImage = document.getElementById('productImage');
+    if (productImage) {
+        productImage.addEventListener('click', function() {
+            this.style.transform = 'scale(1.05)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 300);
+        });
+    }
+});
+</script>
 {% endblock %}
