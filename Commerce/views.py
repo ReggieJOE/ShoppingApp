@@ -11,9 +11,18 @@ from django.contrib.auth import logout as auth_logout
 def home(request):
     categories = Category.objects.all()
     featured_products = Product.objects.filter(stock__gt=0)[:8]
+    electronics = Product.objects.filter(category__name= 'Electronics',stock__gt=0)[:8]
+    fashion = Product.objects.filter(category__name= 'Fashion',stock__gt=0)[:4]
+    groceries = Product.objects.filter(category__name= 'Groceries',stock__gt=0)[:4]
+
+
     return render(request, 'home.html', {
         'categories': categories,
-        'featured_products': featured_products})
+        'featured_products': featured_products,
+        'electronics': electronics,
+        'fashion': fashion,
+        'groceries': groceries,
+    })
 
 def product_list(request, category_id=None):
     category = None
