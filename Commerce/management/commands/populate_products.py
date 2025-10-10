@@ -1,13 +1,14 @@
 import os
 from django.core.management.base import BaseCommand
 from Commerce.models import Category, Product
+from django.core.files import File
 from django.conf import settings
+
 
 class Command(BaseCommand):
     help = 'Populate database with sample products'
 
     def handle(self, *args, **kwargs):
-        # Clear existing data (optional)
         Product.objects.all().delete()
         Category.objects.all().delete()
 
@@ -28,74 +29,84 @@ class Command(BaseCommand):
             )
             categories[cat_data['name']] = category
 
-        # Sample Products Data
+        # Sample Products Data with Image Paths
         products_data = [
             # ELECTRONICS
             {
                 'name': 'iPhone 15 Pro',
-                'description': 'Latest Apple iPhone with A17 Pro chip, titanium design, and advanced camera system. Features 6.1-inch Super Retina XDR display, 48MP main camera, and all-day battery life.',
-                'price': 999.99,
+                'description': 'Latest Apple iPhone with A17 Pro chip, titanium design, and advanced camera system.',
+                'price': 56.99,
                 'category': categories['Electronics'],
                 'stock': 25,
-                'calories': None
+                'calories': None,
+                'image_path': 'products/electronics/iphone 15.jpg'
             },
             {
                 'name': 'Samsung Galaxy S24',
-                'description': 'Powerful Android smartphone with AI features, 200MP camera, and Snapdragon 8 Gen 3 processor. Includes S Pen and 5000mAh battery.',
+                'description': 'Powerful Android smartphone with AI features, 200MP camera.',
                 'price': 849.99,
                 'category': categories['Electronics'],
                 'stock': 30,
-                'calories': None
+                'calories': None,
+                'image_path': 'products/electronics/samsung galaxy.jpg'
             },
             {
                 'name': 'MacBook Air M3',
-                'description': '13-inch laptop with Apple M3 chip, 8GB RAM, 256GB SSD. Ultra-thin design, Retina display, and 18-hour battery life.',
+                'description': '13-inch laptop with Apple M3 chip, 8GB RAM, 256GB SSD.',
                 'price': 1099.99,
                 'category': categories['Electronics'],
                 'stock': 15,
-                'calories': None
+                'calories': None,
+                'image_path': 'products/electronics/macbook.jpg'
             },
             {
                 'name': 'Sony WH-1000XM5',
-                'description': 'Industry-leading noise canceling headphones with 30-hour battery life, touch controls, and exceptional sound quality.',
+                'description': 'Industry-leading noise canceling headphones with 30-hour battery life.',
                 'price': 399.99,
                 'category': categories['Electronics'],
                 'stock': 40,
-                'calories': None
+                'calories': None,
+                'image_path': 'products/electronics/sony mx.jpg'
             },
             {
                 'name': 'iPad Air',
-                'description': '10.9-inch Liquid Retina display, M1 chip, 64GB storage. Perfect for work, creativity, and entertainment.',
+                'description': '10.9-inch Liquid Retina display, M1 chip, 64GB storage.',
                 'price': 599.99,
                 'category': categories['Electronics'],
                 'stock': 20,
-                'calories': None
+                'calories': None,
+                'image_path': 'products/electronics/ipad air.jpg'
             },
 
-            # FASHION
+            # FASHION - Add similar image_path for all products...
             {
                 'name': 'Classic White Sneakers',
-                'description': 'Versatile white leather sneakers with comfortable cushioning. Perfect for casual wear with jeans, shorts, or dresses.',
+                'description': 'Versatile white leather sneakers with comfortable cushioning.',
                 'price': 89.99,
                 'category': categories['Fashion'],
                 'stock': 50,
-                'calories': None
+                'calories': None,
+                'image_path': 'products/fashion/whte sneakers.jpg'
             },
             {
                 'name': 'Denim Jacket',
-                'description': 'Medium wash denim jacket with classic fit. Features button-front closure and chest pockets. Perfect for layering.',
+
+                'description': 'Medium wash denim jacket with classic fit.',
                 'price': 65.99,
                 'category': categories['Fashion'],
                 'stock': 35,
-                'calories': None
+                'calories': None,
+                'image_path': 'products/fashion/Jacket.jpg'
             },
+
             {
                 'name': 'Cotton T-Shirt Pack',
                 'description': 'Pack of 3 basic cotton t-shirts in assorted colors. Soft, breathable fabric with crew neck design.',
                 'price': 24.99,
                 'category': categories['Fashion'],
                 'stock': 100,
-                'calories': None
+                'calories': None,
+                'image_path': 'products/fashion/Tshirt.jpg'
             },
             {
                 'name': 'Running Shoes',
@@ -103,7 +114,8 @@ class Command(BaseCommand):
                 'price': 119.99,
                 'category': categories['Fashion'],
                 'stock': 40,
-                'calories': None
+                'calories': None,
+                'image_path': 'products/fashion/running shoe.jpg'
             },
             {
                 'name': 'Winter Parka',
@@ -111,7 +123,8 @@ class Command(BaseCommand):
                 'price': 199.99,
                 'category': categories['Fashion'],
                 'stock': 25,
-                'calories': None
+                'calories': None,
+                'image_path': 'products/fashion/winter parker.jpg'
             },
 
             # GROCERIES
@@ -121,7 +134,8 @@ class Command(BaseCommand):
                 'price': 0.99,
                 'category': categories['Groceries'],
                 'stock': 200,
-                'calories': 105
+                'calories': 105,
+                'image_path': 'products/groceries/banana.jpg'
             },
             {
                 'name': 'Free-Range Eggs',
@@ -129,7 +143,8 @@ class Command(BaseCommand):
                 'price': 4.99,
                 'category': categories['Groceries'],
                 'stock': 80,
-                'calories': 70
+                'calories': 70,
+                'image_path': 'products/groceries/eggs.jpg'
             },
             {
                 'name': 'Whole Wheat Bread',
@@ -137,7 +152,8 @@ class Command(BaseCommand):
                 'price': 3.49,
                 'category': categories['Groceries'],
                 'stock': 60,
-                'calories': 80
+                'calories': 80,
+                'image_path': 'products/groceries/wheat bread.jpg'
             },
             {
                 'name': 'Fresh Salmon Fillet',
@@ -145,7 +161,8 @@ class Command(BaseCommand):
                 'price': 12.99,
                 'category': categories['Groceries'],
                 'stock': 30,
-                'calories': 206
+                'calories': 206,
+                'image_path': 'products/groceries/salmon fillet.jpg'
             },
             {
                 'name': 'Organic Spinach',
@@ -153,7 +170,8 @@ class Command(BaseCommand):
                 'price': 2.99,
                 'category': categories['Groceries'],
                 'stock': 75,
-                'calories': 23
+                'calories': 23,
+                'image_path': 'products/groceries/spinach.jpg'
             },
 
             # HOME & KITCHEN
@@ -163,7 +181,9 @@ class Command(BaseCommand):
                 'price': 149.99,
                 'category': categories['Home & Kitchen'],
                 'stock': 20,
-                'calories': None
+                'calories': None,
+                'image_path': 'products/home_kitchen/non stick cooking set.jpg'
+
             },
             {
                 'name': 'Memory Foam Pillow',
@@ -171,7 +191,8 @@ class Command(BaseCommand):
                 'price': 39.99,
                 'category': categories['Home & Kitchen'],
                 'stock': 45,
-                'calories': None
+                'calories': None,
+                'image_path': 'products/home_kitchen/pillow.jpg'
             },
             {
                 'name': 'Ceramic Dinner Set',
@@ -179,7 +200,8 @@ class Command(BaseCommand):
                 'price': 79.99,
                 'category': categories['Home & Kitchen'],
                 'stock': 30,
-                'calories': None
+                'calories': None,
+                'image_path': 'products/home_kitchen/dinner set].jpg'
             },
             {
                 'name': 'Air Purifier',
@@ -187,7 +209,8 @@ class Command(BaseCommand):
                 'price': 129.99,
                 'category': categories['Home & Kitchen'],
                 'stock': 15,
-                'calories': None
+                'calories': None,
+                'image_path': 'products/home_kitchen/air purifier.jpg'
             },
             {
                 'name': 'Desk Lamp',
@@ -195,7 +218,8 @@ class Command(BaseCommand):
                 'price': 34.99,
                 'category': categories['Home & Kitchen'],
                 'stock': 50,
-                'calories': None
+                'calories': None,
+                'image_path': 'products/home_kitchen/desk lamp.jpg'
             },
 
             # SPORTS
@@ -205,7 +229,8 @@ class Command(BaseCommand):
                 'price': 29.99,
                 'category': categories['Sports'],
                 'stock': 60,
-                'calories': None
+                'calories': None,
+                'image_path': 'products/sports/yoga mat.jpg'
             },
             {
                 'name': 'Dumbbell Set',
@@ -213,7 +238,8 @@ class Command(BaseCommand):
                 'price': 89.99,
                 'category': categories['Sports'],
                 'stock': 25,
-                'calories': None
+                'calories': None,
+                'image_path': 'products/sports/dumbell set.jpg'
             },
             {
                 'name': 'Running Watch',
@@ -221,7 +247,8 @@ class Command(BaseCommand):
                 'price': 199.99,
                 'category': categories['Sports'],
                 'stock': 20,
-                'calories': None
+                'calories': None,
+                'image_path': 'products/sports/running watch.jpg'
             },
             {
                 'name': 'Basketball',
@@ -229,7 +256,8 @@ class Command(BaseCommand):
                 'price': 24.99,
                 'category': categories['Sports'],
                 'stock': 40,
-                'calories': None
+                'calories': None,
+                'image_path': 'products/sports/basketball.jpg'
             },
             {
                 'name': 'Camping Tent',
@@ -237,16 +265,62 @@ class Command(BaseCommand):
                 'price': 129.99,
                 'category': categories['Sports'],
                 'stock': 15,
-                'calories': None
+                'calories': None,
+                'image_path': 'products/sports/camping tent.jpg'
             },
         ]
 
-        # Create Products
+        products_created = 0
+        images_assigned = 0
+
         for product_data in products_data:
-            Product.objects.create(**product_data)
+            image_path = product_data.pop('image_path', None)
+            product = Product.objects.create(**product_data)
+            products_created += 1
+
+            # Add image if path exists and file exists
+            if image_path:
+                full_image_path = os.path.join(settings.MEDIA_ROOT, image_path)
+                if os.path.exists(full_image_path):
+                    try:
+                        with open(full_image_path, 'rb') as f:
+                            product.image.save(os.path.basename(image_path), File(f), save=True)
+                        images_assigned += 1
+                        self.stdout.write(f'✓ Added image to {product.name}')
+                    except Exception as e:
+                        self.stdout.write(
+                            self.style.ERROR(f'Error adding image to {product.name}: {e}')
+                        )
+                else:
+                    self.stdout.write(
+                        self.style.WARNING(f'Image not found: {full_image_path}')
+                    )
 
         self.stdout.write(
             self.style.SUCCESS(
-                f'Successfully populated database with {len(products_data)} products across {len(categories)} categories!'
+                f'Successfully created {products_created} products and assigned {images_assigned} images!'
+            )
+        )
+
+        # Create Products with Images
+        for product_data in products_data:
+            image_path = product_data.pop('image_path', None)  # Remove image_path from product data
+            product = Product.objects.create(**product_data)
+
+            # Add image if path exists and file exists
+            if image_path:
+                full_image_path = os.path.join(settings.MEDIA_ROOT, image_path)
+                if os.path.exists(full_image_path):
+                    with open(full_image_path, 'rb') as f:
+                        product.image.save(os.path.basename(image_path), File(f), save=True)
+                    self.stdout.write(f'Added image to {product.name}')
+                else:
+                    self.stdout.write(
+                        self.style.WARNING(f'Image not found: {full_image_path}')
+                    )
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                f'Successfully populated database with {len(products_data)} products!'
             )
         )
