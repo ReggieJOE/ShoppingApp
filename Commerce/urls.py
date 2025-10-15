@@ -7,6 +7,7 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
     path('logout/', views.custom_logout, name='logout'),
+
     path('products/', views.product_list, name='product_list'),
     path('products/category/<int:category_id>/', views.product_list, name='product_list_by_category'),
     path('product/<int:product_id>/', views.product_detail, name='product_detail'),
@@ -18,4 +19,9 @@ urlpatterns = [
 
     path('checkout/', views.checkout, name='checkout'),
     path('order/success/<int:order_id>/', views.order_success, name='order_success'),
+
+
+    path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('admin/orders/', views.order_history, name='order_history'),
+    path('admin/customers/', views.customer_list, name='customer_list'),
 ]

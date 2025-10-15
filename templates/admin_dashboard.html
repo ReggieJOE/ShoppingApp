@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - ReggieMercy{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0"><i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard</h1>
+    <div class="btn-group">
+        <a href="{% url 'order_history' %}" class="btn btn-outline-primary">
+            <i class="fas fa-history me-1"></i>Order History
+        </a>
+        <a href="{% url 'customer_list' %}" class="btn btn-outline-success">
+            <i class="fas fa-users me-1"></i>Customers
+        </a>
+        <a href="/admin/" class="btn btn-outline-secondary">
+            <i class="fas fa-cog me-1"></i>Django Admin
+        </a>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">Rp. {{ total_revenue|floatformat:2 }}</h4>
+                        <p class="mb-0">Total Revenue</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-dollar-sign fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ total_orders }}</h4>
+                        <p class="mb-0">Total Orders</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-shopping-bag fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="mb-0">{{ total_customers }}</h4>
+                        <p class="mb-0">Total Customers</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-users fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Orders -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Orders</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for order in recent_orders %}
+                        <tr>
+                            <td>#{{ order.id }}</td>
+                            <td>{{ order.user.username }}</td>
+                            <td>Rp. {{ order.total_amount }}</td>
+                            <td>
+                                    <span class="badge
+                                        {% if order.status == 'delivered' %}bg-success
+                                        {% elif order.status == 'pending' %}bg-warning
+                                        {% elif order.status == 'cancelled' %}bg-danger
+                                        {% else %}bg-info{% endif %}">
+                                        {{ order.get_status_display }}
+                                    </span>
+                            </td>
+                            <td>{{ order.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
+                                <p class="text-muted mb-0">No orders yet</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-rocket me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="/admin/Commerce/product/add/" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Add New Product
+                    </a>
+                    <a href="/admin/Commerce/category/add/" class="btn btn-outline-primary">
+                        <i class="fas fa-tags me-2"></i>Manage Categories
+                    </a>
+                    <a href="{% url 'order_history' %}" class="btn btn-outline-success">
+                        <i class="fas fa-list me-2"></i>View All Orders
+                    </a>
+                    <a href="{% url 'customer_list' %}" class="btn btn-outline-info">
+                        <i class="fas fa-user-friends me-2"></i>Customer Management
+                    </a>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Status Overview -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Order Status</h5>
+            </div>
+            <div class="card-body">
+                {% for status in order_status_counts %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+            <span>
+                {% if status.status == 'pending' %}
+                    <i class="fas fa-clock text-warning me-1"></i>
+                {% elif status.status == 'processing' %}
+                    <i class="fas fa-cog text-info me-1"></i>
+                {% elif status.status == 'shipped' %}
+                    <i class="fas fa-shipping-fast text-primary me-1"></i>
+                {% elif status.status == 'delivered' %}
+                    <i class="fas fa-check-circle text-success me-1"></i>
+                {% elif status.status == 'cancelled' %}
+                    <i class="fas fa-times-circle text-danger me-1"></i>
+                {% endif %}
+                {{ status.status|title }}
+            </span>
+                    <span class="badge bg-primary rounded-pill">{{ status.count }}</span>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center mb-0">No orders yet</p>
+                {% endfor %}
+            </div>
+        </div>
+
+
+    </div>
+</div>
+{% endblock %}

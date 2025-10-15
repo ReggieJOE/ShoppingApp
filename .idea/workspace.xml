@@ -4,11 +4,101 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2bd4f129-6fc3-477e-ad6e-35eba9a01078" name="Changes" comment="" />
+    <list default="true" id="2bd4f129-6fc3-477e-ad6e-35eba9a01078" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/media/products/Jacket.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/Jacket_9aZzP1W.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/Tshirt.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/Tshirt_AfjwFE0.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/air_purifier.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/air_purifier_e5d4Pkc.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/banana.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/banana_tagc2hP.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/basketball.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/basketball_V5cER9W.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/camping_tent.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/camping_tent_gF3G05D.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/desk_lamp.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/desk_lamp_HOBRCbZ.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/dinner_set.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/dinner_set_le0XjIL.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/dumbell_set.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/dumbell_set_njGDeo4.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/eggs.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/eggs_MSHSmqU.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/electronics/ipad air.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/electronics/iphone 15.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/electronics/macbook.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/electronics/samsung galaxy.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/electronics/sony mx.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/fashion/Jacket.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/fashion/Tshirt.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/fashion/running shoe.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/fashion/whte sneakers.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/fashion/winter parker.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/groceries/banana.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/groceries/eggs.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/groceries/salmon fillet.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/groceries/spinach.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/groceries/wheat bread.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/home_kitchen/air purifier.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/home_kitchen/desk lamp.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/home_kitchen/dinner set].jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/home_kitchen/non stick cooking set.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/home_kitchen/pillow.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/ipad_air.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/ipad_air_YJT3Rf9.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/iphone_15.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/iphone_15_OwURC9p.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/macbook.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/macbook_A9sqdcM.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/non_stick_cooking_set.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/non_stick_cooking_set_BD0pCsB.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/pillow.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/pillow_lELVv8k.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/running_shoe.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/running_shoe_Svi0dJM.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/running_watch.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/running_watch_wK1DUBq.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/salmon_fillet.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/salmon_fillet_toDBjmY.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/samsung_galaxy.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/samsung_galaxy_5TerwPY.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/sony_mx.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/sony_mx_qdcjSK7.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/spinach.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/spinach_n6vH35J.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/sports/basketball.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/sports/camping tent.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/sports/dumbell set.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/sports/running watch.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/sports/yoga mat.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/wheat_bread.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/wheat_bread_UXCefEI.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/whte_sneakers.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/winter_parker.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/winter_parker_3qfEmL5.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/yoga_mat.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/media/products/yoga_mat_A9KHhY7.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/DjangoProject3.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/DjangoProject3.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Commerce/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/Commerce/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Commerce/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/Commerce/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/home.html" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="HTML File" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -26,10 +116,11 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "feature/ProductsUpdate",
+    "git-widget-placeholder": "Merging main",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "vue.rearranger.settings.migration": "true"

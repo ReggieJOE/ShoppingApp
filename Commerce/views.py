@@ -3,10 +3,13 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
-from .models import Product, Category, Cart, CartItem, Order,  OrderItem
+from .models import Product, Category, Cart, CartItem, Order, OrderItem
 from .forms import UserRegisterForm, CheckoutForm
 from django.contrib.auth import logout as auth_logout
-
+from django.db.models import Sum, Count
+from django.utils import timezone
+from datetime import timedelta
+from django.contrib.auth.models import User
 
 def home(request):
     categories = Category.objects.all()
@@ -14,6 +17,7 @@ def home(request):
     return render(request, 'home.html', {
         'categories': categories,
         'featured_products': featured_products})
+
 
 def product_list(request, category_id=None):
     category = None
@@ -23,14 +27,16 @@ def product_list(request, category_id=None):
     if category_id:
         category = get_object_or_404(Category, id=category_id)
         products = products.filter(category=category)
-    return render(request, 'product_list.html',{
+    return render(request, 'product_list.html', {
         'products': products,
         'categories': categories,
         'category': category})
 
+
 def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     return render(request, 'product_detail.html', {'product': product})
+
 
 def register(request):
     if request.method == 'POST':
@@ -137,7 +143,81 @@ def order_success(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     return render(request, 'order_success.html', {'order': order})
 
+
 def custom_logout(request):
     auth_logout(request)
     messages.success(request, 'Successfully logged out.')
     return redirect('home')
+
+
+@login_required
+def admin_dashboard(request):
+    if not request.user.is_staff:
+        messages.error(request, 'Access denied. Admin privileges required.')
+        return redirect('home')
+
+    # Statistics
+    total_orders = Order.objects.count()
+    total_revenue = Order.objects.aggregate(total=Sum('total_amount'))['total'] or 0
+    total_customers = User.objects.filter(is_staff=False).count()
+
+    # Recent orders
+    recent_orders = Order.objects.select_related('user').prefetch_related('items').order_by('-created_at')[:10]
+
+    # Sales data for chart (last 7 days)
+    today = timezone.now().date()
+    last_week = today - timedelta(days=7)
+
+    daily_sales = Order.objects.filter(
+        created_atdategte=last_week
+    ).values('created_at__date').annotate(
+        total=Sum('total_amount'),
+        count=Count('id')
+    ).order_by('created_at__date')
+
+    context = {
+        'total_orders': total_orders,
+        'total_revenue': total_revenue,
+        'total_customers': total_customers,
+        'recent_orders': recent_orders,
+        'daily_sales': list(daily_sales),
+    }
+
+    return render(request, 'admin_dashboard.html', context)
+
+
+@login_required
+def order_history(request):
+    if not request.user.is_staff:
+        messages.error(request, 'Access denied. Admin privileges required.')
+        return redirect('home')
+
+    orders = Order.objects.select_related('user').prefetch_related('items').order_by('-created_at')
+
+    # Filtering
+    status_filter = request.GET.get('status')
+    if status_filter:
+        orders = orders.filter(status=status_filter)
+
+    context = {
+        'orders': orders,
+        'status_choices': Order.STATUS_CHOICES,
+    }
+    return render(request, 'order_history.html', context)
+
+
+@login_required
+def customer_list(request):
+    if not request.user.is_staff:
+        messages.error(request, 'Access denied. Admin privileges required.')
+        return redirect('home')
+
+    customers = User.objects.filter(is_staff=False).annotate(
+        total_orders=Count('order'),
+        total_spent=Sum('order__total_amount')
+    ).order_by('-date_joined')
+
+    context = {
+        'customers': customers,
+    }
+    return render(request, 'customer_list.html', context)
