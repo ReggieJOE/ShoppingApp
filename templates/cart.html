@@ -210,55 +210,111 @@
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Calculate tax and update totals
-        function updateTotals() {
-            const subtotal = parseFloat('{{ cart.get_total_price }}') || 0;
-            const tax = subtotal * 0.03; // 3% tax
-            const grandTotal = subtotal + tax;
+document.addEventListener('DOMContentLoaded', function() {
+    // Calculate tax and update totals
+    function updateTotals() {
+        const subtotal = parseFloat('{{ cart.get_total_price }}') || 0;
+        const tax = subtotal * 0.03; // 3% tax
+        const grandTotal = subtotal + tax;
 
-            document.getElementById('tax').textContent = tax.toFixed(2);
-            document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
+        const taxElement = document.getElementById('tax');
+        const grandTotalElement = document.getElementById('grand-total');
+
+        if (taxElement) {
+            taxElement.textContent = tax.toFixed(2);
         }
+        if (grandTotalElement) {
+            grandTotalElement.textContent = grandTotal.toFixed(2);
+        }
+    }
 
-        // Quantity button handlers
-        document.querySelectorAll('.quantity-btn').forEach(button => {
-            button.addEventListener('click', function () {
-                const action = this.getAttribute('data-action');
-                const input = this.closest('form').querySelector('.quantity-input');
-                let quantity = parseInt(input.value);
+    // Quantity button handlers
+    document.querySelectorAll('.quantity-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const action = this.getAttribute('data-action');
+            const form = this.closest('form');
+            const input = form.querySelector('.quantity-input');
+            let quantity = parseInt(input.value);
+            const maxQuantity = parseInt(input.getAttribute('max'));
 
-                if (action === 'increase') {
-                    quantity = Math.min(quantity + 1, parseInt(input.getAttribute('max')));
-                } else if (action === 'decrease') {
-                    quantity = Math.max(quantity - 1, 1);
-                }
+            if (action === 'increase') {
+                quantity = Math.min(quantity + 1, maxQuantity);
+            } else if (action === 'decrease') {
+                quantity = Math.max(quantity - 1, 1);
+            }
 
-                input.value = quantity;
+            input.value = quantity;
 
-                // Submit form automatically
-                if (input.hasAttribute('data-item-id')) {
-                    input.closest('form').submit();
-                }
-            });
+            // Submit form automatically
+            form.submit();
         });
+    });
 
-        // Update item total when quantity changes
-        document.querySelectorAll('.quantity-input').forEach(input => {
-            input.addEventListener('change', function () {
+    // Update item total when quantity changes
+    document.querySelectorAll('.quantity-input').forEach(input => {
+        input.addEventListener('change', function() {
+            const itemId = this.getAttribute('data-item-id');
+            const form = this.closest('form');
+
+            // Find the price for this item (you might need to store this in a data attribute)
+            const priceText = this.closest('tr').querySelector('.text-primary').textContent;
+            const price = parseFloat(priceText.replace('GH₵ ', '')) || 0;
+            const quantity = parseInt(this.value);
+            const total = price * quantity;
+
+            // Update the item total display - FIXED THIS LINE
+            const itemTotalElement = document.querySelector('.item-total[data-item-id="' + itemId + '"]');
+            if (itemTotalElement) {
+                itemTotalElement.textContent = total.toFixed(2);
+            }
+
+            updateTotals();
+        });
+    });
+
+    // Real-time quantity update without page reload (optional enhancement)
+    document.querySelectorAll('.quantity-input').forEach(input => {
+        let timeout = null;
+
+        input.addEventListener('input', function() {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
                 const itemId = this.getAttribute('data-item-id');
-                const price = parseFloat('{{ item.product.price }}'); // This would need dynamic pricing
-                const quantity = parseInt(this.value);
+                const priceText = this.closest('tr').querySelector('.text-primary').textContent;
+                const price = parseFloat(priceText.replace('GH₵ ', '')) || 0;
+                const quantity = parseInt(this.value) || 0;
                 const total = price * quantity;
 
-                document.querySelector(.item - total[data - item - id = "${itemId}"]     ).
-                textContent = total.toFixed(2);
-                updateTotals();
-            });
-        });
+                // Update the item total display - FIXED THIS LINE
+                const itemTotalElement = document.querySelector('.item-total[data-item-id="' + itemId + '"]');
+                if (itemTotalElement) {
+                    itemTotalElement.textContent = total.toFixed(2);
+                }
 
-        // Initial calculation
-        updateTotals();
+                // Update subtotal and grand total
+                let newSubtotal = 0;
+                document.querySelectorAll('.item-total').forEach(element => {
+                    newSubtotal += parseFloat(element.textContent) || 0;
+                });
+
+                const subtotalElement = document.getElementById('subtotal');
+                const grandTotalElement = document.getElementById('grand-total');
+                const tax = newSubtotal * 0.03;
+                const grandTotal = newSubtotal + tax;
+
+                if (subtotalElement) subtotalElement.textContent = newSubtotal.toFixed(2);
+                if (grandTotalElement) grandTotalElement.textContent = grandTotal.toFixed(2);
+
+                // Update tax
+                const taxElement = document.getElementById('tax');
+                if (taxElement) taxElement.textContent = tax.toFixed(2);
+
+            }, 500); // Delay to prevent too many updates
+        });
     });
+
+    // Initial calculation
+    updateTotals();
+});
 </script>
 {% endblock %}
