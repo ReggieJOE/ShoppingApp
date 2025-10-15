@@ -1,81 +1,362 @@
 {% extends 'base.html' %}
 
-{% block title %}Checkout - ReggieMercy Shop{% endblock %}
+{% block title %}Checkout - ReggieMercy{% endblock %}
 
 {% block content %}
 <div class="row">
-    <div class="col-md-8">
-        <h2>Checkout</h2>
-        
-        <form method="post">
-            {% csrf_token %}
-            
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5>Shipping Information</h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        {{ form.shipping_address.label_tag }}
-                        {{ form.shipping_address }}
-                        {% if form.shipping_address.errors %}
-                        <div class="text-danger">
-                            {{ form.shipping_address.errors }}
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-shopping-bag me-2"></i>Checkout</h4>
             </div>
+            <div class="card-body">
+                <form method="post" id="checkoutForm">
+                    {% csrf_token %}
 
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5>Payment Method</h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        {{ form.payment_method.label_tag }}
-                        {{ form.payment_method }}
-                        {% if form.payment_method.errors %}
-                        <div class="text-danger">
-                            {{ form.payment_method.errors }}
+                    <!-- Shipping Information -->
+                    <div class="mb-4">
+                        <h5 class="mb-3"><i class="fas fa-truck me-2"></i>Shipping Information</h5>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Complete Shipping Address</label>
+                                    {{ form.shipping_address }}
+                                    {% if form.shipping_address.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.shipping_address.errors %}
+                                        <i class="fas fa-exclamation-circle"></i> {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        <small>
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Please provide your complete address in this format:<br>
+                                            <strong>House Number & Street Name, Area/Locality, City/Town, Region, Ghana
+                                                Postal Code</strong><br>
+                                            Example: <em>123 Main Street, East Legon, Accra, Greater Accra,
+                                            GA-123-4567</em>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        {% endif %}
                     </div>
-                </div>
-            </div>
 
-            <button type="submit" class="btn btn-primary btn-lg">
-                <i class="fas fa-check"></i> Place Order
-            </button>
-            <a href="{% url 'view_cart' %}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left"></i> Back to Cart
-            </a>
-        </form>
+                    <!-- Payment Method -->
+                    <div class="mb-4">
+                        <h5 class="mb-3"><i class="fas fa-credit-card me-2"></i>Payment Method</h5>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Select Payment Method</label>
+                                    {{ form.payment_method }}
+                                    {% if form.payment_method.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.payment_method.errors %}
+                                        <i class="fas fa-exclamation-circle"></i> {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Payment Method Cards -->
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <div class="card payment-option" data-method="mobile_money">
+                                            <div class="card-body text-center">
+                                                <i class="fas fa-mobile-alt fa-2x text-primary mb-2"></i>
+                                                <h6>Mobile Money</h6>
+                                                <small class="text-muted">MTN, Vodafone, AirtelTigo</small>
+
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card payment-option" data-method="card">
+                                            <div class="card-body text-center">
+                                                <i class="fas fa-credit-card fa-2x text-success mb-2"></i>
+                                                <h6>Credit/Debit Card</h6>
+                                                <small class="text-muted">Visa, Mastercard</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Mobile Money Details -->
+                                <div id="mobileMoneyDetails" class="card-details" style="display: none;">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Mobile Network</label>
+                                            <select class="form-select" name="mobile_network">
+                                                <option value="">Select Network</option>
+                                                <option value="mtn">MTN Mobile Money</option>
+                                                <option value="vodafone">Vodafone Cash</option>
+                                                <option value="airteltigo">AirtelTigo Money</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Phone Number</label>
+                                            <input type="tel" class="form-control" name="mobile_number"
+                                                   placeholder="e.g., 0551234567">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Card Details -->
+                                <div id="cardDetails" class="card-details" style="display: none;">
+                                    <div class="row g-3">
+                                        <div class="col-md-8">
+                                            <label class="form-label">Card Number</label>
+                                            {{ form.card_number }}
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label">Expiry</label>
+                                            {{ form.card_expiry }}
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label">CVV</label>
+                                            {{ form.card_cvv }}
+                                        </div>
+                                    </div>
+                                    {% if form.card_number.errors or form.card_expiry.errors or form.card_cvv.errors %}
+                                    <div class="text-danger small mt-2">
+                                        {% for error in form.card_number.errors %}
+                                        <i class="fas fa-exclamation-circle"></i> {{ error }}<br>
+                                        {% endfor %}
+                                        {% for error in form.card_expiry.errors %}
+                                        <i class="fas fa-exclamation-circle"></i> {{ error }}<br>
+                                        {% endfor %}
+                                        {% for error in form.card_cvv.errors %}
+                                        <i class="fas fa-exclamation-circle"></i> {{ error }}<br>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Payment Method Icons -->
+                                <div class="payment-methods mt-3 text-center">
+                                    <small class="text-muted d-block mb-2">We accept:</small>
+                                    <div class="d-flex justify-content-center gap-3">
+                                        <i class="fab fa-cc-visa fa-2x text-primary" title="Visa"></i>
+                                        <i class="fab fa-cc-mastercard fa-2x text-danger" title="Mastercard"></i>
+                                        <i class="fas fa-mobile-alt fa-2x text-success" title="Mobile Money"></i>
+                                        <i class="fas fa-money-bill-wave fa-2x text-warning"
+                                           title="Cash on Delivery"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                        <a href="{% url 'view_cart' %}" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Cart
+                        </a>
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-lock me-2"></i>Place Order - GH₵ {{ cart.get_total_price }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h5>Order Summary</h5>
+    <!-- Order Summary -->
+    <div class="col-lg-4">
+        <div class="card sticky-top" style="top: 20px;">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Order Summary</h5>
             </div>
             <div class="card-body">
                 {% for item in cart.items.all %}
-                <div class="d-flex justify-content-between mb-2">
-                    <div>
-                        <small>{{ item.product.name }} (x{{ item.quantity }})</small>
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                    <div class="d-flex align-items-center">
+                        {% if item.product.image %}
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}"
+                             class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                        {% else %}
+                        <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center"
+                             style="width: 50px; height: 50px;">
+                            <i class="fas fa-image text-muted"></i>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <h6 class="mb-0 small">{{ item.product.name }}</h6>
+                            <small class="text-muted">Qty: {{ item.quantity }}</small>
+                        </div>
                     </div>
-                    <div>
-                        <small>Rp. {{ item.get_total_price }}</small>
+                    <div class="text-end">
+                        <strong class="text-primary">GH₵ {{ item.get_total_price }}</strong>
                     </div>
                 </div>
                 {% endfor %}
-                <hr>
-                <div class="d-flex justify-content-between">
-                    <strong>Total:</strong>
-                    <strong>Rp. {{ cart.get_total_price }}</strong>
+
+                <div class="mt-3 pt-2 border-top">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <span>GH₵ {{ cart.get_total_price }}</span>
+
+
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Shipping:</span>
+                        <span class="text-success">FREE</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tax (3%):</span>
+                        <span>GH₵ {% widthratio cart.get_total_price 1 0.03 %}</span>
+                    </div>
+                    <div class="d-flex justify-content-between fs-5 fw-bold mt-3 pt-2 border-top">
+                        <span>Total:</span>
+                        <span class="text-primary">GH₵ {% widthratio cart.get_total_price 1 1.03 %}</span>
+                    </div>
+                </div>
+
+                <!-- Delivery Info -->
+                <div class="alert alert-info mt-3">
+                    <h6><i class="fas fa-shipping-fast me-2"></i>Delivery Information</h6>
+                    <small class="mb-0">
+                        <strong>Free shipping</strong> on all orders within Ghana<br>
+                        <strong>Delivery time:</strong> 2-5 business days<br>
+                        <strong>Tracking:</strong> Provided via SMS/Email
+                    </small>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .sticky-top {
+        position: sticky;
+        z-index: 100;
+    }
+
+    .card-details {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+        margin-top: 15px;
+    }
+
+    .payment-option {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .payment-option:hover {
+        border-color: #007bff;
+        transform: translateY(-2px);
+    }
+
+    .payment-option.active {
+        border-color: #007bff;
+        background-color: #f8f9fa;
+    }
+
+    .payment-methods i {
+        opacity: 0.7;
+        transition: opacity 0.3s ease;
+    }
+
+    .payment-methods i:hover {
+        opacity: 1;
+    }
+
+    .form-control:focus {
+        border-color: #28a745;
+        box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const paymentMethod = document.querySelector('select[name="payment_method"]');
+        const cardDetails = document.getElementById('cardDetails');
+        const mobileMoneyDetails = document.getElementById('mobileMoneyDetails');
+        const paymentOptions = document.querySelectorAll('.payment-option');
+
+        // Show/hide payment details based on method
+        function togglePaymentDetails() {
+            const selectedMethod = paymentMethod.value;
+
+            // Hide all details first
+            cardDetails.style.display = 'none';
+            mobileMoneyDetails.style.display = 'none';
+
+            // Remove active class from all options
+            paymentOptions.forEach(option => option.classList.remove('active'));
+
+            // Show relevant details
+            if (selectedMethod === 'credit_card' || selectedMethod === 'debit_card') {
+                cardDetails.style.display = 'block';
+                document.querySelector('.payment-option[data-method="card"]').classList.add('active');
+            } else if (selectedMethod === 'mobile_money') {
+                mobileMoneyDetails.style.display = 'block';
+                document.querySelector('.payment-option[data-method="mobile_money"]').classList.add('active');
+            }
+        }
+
+        // Payment option click handlers
+        paymentOptions.forEach(option => {
+            option.addEventListener('click', function () {
+                const method = this.getAttribute('data-method');
+                if (method === 'mobile_money') {
+                    paymentMethod.value = 'mobile_money';
+                } else if (method === 'card') {
+                    paymentMethod.value = 'credit_card';
+                }
+                togglePaymentDetails();
+            });
+        });
+
+// Initial check
+        togglePaymentDetails();
+
+        // Listen for changes
+        paymentMethod.addEventListener('change', togglePaymentDetails);
+
+        // Format card number
+        const cardNumber = document.querySelector('input[name="card_number"]');
+        if (cardNumber) {
+            cardNumber.addEventListener('input', function (e) {
+                let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+                let formattedValue = '';
+
+                for (let i = 0; i < value.length; i++) {
+                    if (i > 0 && i % 4 === 0) {
+                        formattedValue += ' ';
+                    }
+                    formattedValue += value[i];
+                }
+
+                e.target.value = formattedValue;
+            });
+        }
+
+        // Format expiry date
+        const cardExpiry = document.querySelector('input[name="card_expiry"]');
+        if (cardExpiry) {
+            cardExpiry.addEventListener('input', function (e) {
+                let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+                if (value.length >= 2) {
+                    value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                }
+                e.target.value = value;
+            });
+        }
+
+        // Only allow numbers in CVV
+        const cardCvv = document.querySelector('input[name="card_cvv"]');
+        if (cardCvv) {
+            cardCvv.addEventListener('input', function (e) {
+                e.target.value = e.target.value.replace(/[^0-9]/g, '');
+            });
+        }
+    });
+</script>
 {% endblock %}
