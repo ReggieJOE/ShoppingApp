@@ -100,49 +100,86 @@ def update_cart_item(request, item_id):
 def checkout(request):
     cart = get_object_or_404(Cart, user=request.user)
 
+    print(f"DEBUG: Checkout started for user {request.user.username}")
+
     if not cart.items.exists():
         messages.error(request, 'Your cart is empty!')
         return redirect('view_cart')
 
     if request.method == 'POST':
+        print("DEBUG: POST request received")
         form = CheckoutForm(request.POST)
         if form.is_valid():
-            with transaction.atomic():
-                order = form.save(commit=False)
-                order.user = request.user
-                order.total_amount = cart.get_total_price()
-                order.save()
+            print("DEBUG: Form is valid")
+            try:
+                with transaction.atomic():
+                    # Get form data
+                    shipping_address = form.cleaned_data['shipping_address']
+                    payment_method = form.cleaned_data['payment_method']
 
-                for cart_item in cart.items.all():
-                    OrderItem.objects.create(
-                        order=order,
-                        product=cart_item.product,
-                        quantity=cart_item.quantity,
-                        price=cart_item.product.price
+                    print(f"DEBUG: Creating order with shipping: {shipping_address}, payment: {payment_method}")
+
+                    # Create order
+                    order = Order.objects.create(
+                        user=request.user,
+                        total_amount=cart.get_total_price(),
+                        shipping_address=shipping_address,
+                        payment_method=payment_method,
+                        status='pending'
                     )
-                    # Update stock
-                    cart_item.product.stock -= cart_item.quantity
-                    cart_item.product.save()
 
-                # Clear cart
-                cart.items.all().delete()
+                    print(f"DEBUG: Order created with ID {order.id}")
 
-                messages.success(request, 'Order placed successfully!')
-                return redirect('order_success', order_id=order.id)
+                    # Create order items
+                    for cart_item in cart.items.all():
+                        OrderItem.objects.create(
+                            order=order,
+                            product=cart_item.product,
+                            quantity=cart_item.quantity,
+                            price=cart_item.product.price
+                        )
+                        # Update stock
+                        cart_item.product.stock -= cart_item.quantity
+                        cart_item.product.save()
+                        print(f"DEBUG: Added {cart_item.product.name} to order")
+
+                    # Clear cart
+                    cart_items_count = cart.items.count()
+                    cart.items.all().delete()
+                    print(f"DEBUG: Cleared {cart_items_count} items from cart")
+
+                    messages.success(request, 'Order placed successfully!')
+                    print(f"DEBUG: Redirecting to order_success with order_id {order.id}")
+                    return redirect('order_success', order_id=order.id)
+
+            except Exception as e:
+                print(f"DEBUG: Exception during checkout: {str(e)}")
+                import traceback
+                print(f"DEBUG: Traceback: {traceback.format_exc()}")
+                messages.error(request, f'An error occurred while processing your order: {str(e)}')
+        else:
+            print(f"DEBUG: Form errors: {form.errors}")
+            messages.error(request, 'Please correct the errors below.')
     else:
         form = CheckoutForm()
+        print("DEBUG: GET request - showing checkout form")
 
     return render(request, 'checkout.html', {
         'cart': cart,
         'form': form
     })
 
-
 @login_required
 def order_success(request, order_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
-    return render(request, 'order_success.html', {'order': order})
-
+    print(f"DEBUG: order_success view called with order_id {order_id}")
+    try:
+        order = get_object_or_404(Order, id=order_id, user=request.user)
+        print(f"DEBUG: Found order #{order.id} for user {request.user.username}")
+        return render(request, 'order_success.html', {'order': order})
+    except Exception as e:
+        print(f"DEBUG: Error in order_success: {e}")
+        messages.error(request, f'Order not found: {e}')
+        return redirect('home')
 
 def custom_logout(request):
     auth_logout(request)

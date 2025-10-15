@@ -61,6 +61,11 @@ class Order(models.Model):
     shipping_address = models.TextField()
     payment_method = models.CharField(max_length=50)
 
+def __str__(self):
+    return f"Order #{self.id} by {self.user.username}"
+def get_status_display(self):
+    return dict(self.STATUS_CHOICES).get(self.status, self.status)
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
