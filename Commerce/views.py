@@ -33,8 +33,8 @@ def product_list(request, category_id=None):
     category = None
     categories = Category.objects.all()
 
-    # Start with all products that have stock, remove duplicates
-    products = Product.objects.filter(stock__gt=0).distinct()
+    # Start with all products that have stock
+    products = Product.objects.filter(stock__gt=0)
 
     print(f"DEBUG: Initial products count: {products.count()}")
 
@@ -44,13 +44,10 @@ def product_list(request, category_id=None):
         products = products.filter(category=category)
         print(f"DEBUG: After category filter: {products.count()}")
 
-    # Check for duplicates
-    product_ids = [p.id for p in products]
-    unique_ids = set(product_ids)
-    if len(product_ids) != len(unique_ids):
-        print(f"DEBUG: DUPLICATES FOUND! Total: {len(product_ids)}, Unique: {len(unique_ids)}")
-        # Remove duplicates by using distinct()
-        products = products.distinct()
+    # Remove any potential duplicates by using distinct on ID
+    products = products.distinct()
+
+    print(f"DEBUG: Final products count: {products.count()}")
 
     return render(request, 'product_list.html', {
         'products': products,
@@ -65,20 +62,35 @@ def product_detail(request, product_id):
 
 
 def register(request):
+    print("DEBUG: Register view accessed")
+
+    if request.user.is_authenticated:
+        messages.info(request, 'You are already logged in!')
+        return redirect('home')
+
     if request.method == 'POST':
+        print("DEBUG: POST request to register")
         form = UserRegisterForm(request.POST)
         if form.is_valid():
+            print("DEBUG: Form is valid, creating user")
             try:
                 user = form.save()
+                print(f"DEBUG: User created: {user.username}")
                 login(request, user)
-                messages.success(request, 'Account successfully created.')
+                messages.success(request, f'Account created successfully! Welcome, {user.username}!')
                 return redirect('home')
             except Exception as e:
+                print(f"DEBUG: Error creating user: {str(e)}")
                 messages.error(request, f'Error creating account: {str(e)}')
         else:
-            messages.error(request, 'Please correct the error below.')
+            print(f"DEBUG: Form errors: {form.errors}")
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
     else:
         form = UserRegisterForm()
+        print("DEBUG: GET request - showing registration form")
+
     return render(request, 'register.html', {'form': form})
 
 
@@ -256,6 +268,7 @@ def admin_dashboard(request):
     }
 
     return render(request, 'admin_dashboard.html', context)
+
 
 @login_required
 def order_history(request):
