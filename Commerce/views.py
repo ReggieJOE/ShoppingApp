@@ -11,26 +11,52 @@ from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.models import User
 
+
 def home(request):
     categories = Category.objects.all()
-    featured_products = Product.objects.filter(stock__gt=0)[:8]
+
+    # Get featured products without duplicates
+    featured_products = Product.objects.filter(stock__gt=0).distinct()[:8]
+
+    # Debug info
+    print(f"DEBUG: Found {featured_products.count()} featured products")
+    for product in featured_products:
+        print(f"DEBUG: Product: {product.name}, ID: {product.id}")
+
     return render(request, 'home.html', {
         'categories': categories,
-        'featured_products': featured_products})
+        'featured_products': featured_products,
+    })
 
 
 def product_list(request, category_id=None):
     category = None
     categories = Category.objects.all()
-    products = Product.objects.filter(stock__gt=0)
+
+    # Start with all products that have stock, remove duplicates
+    products = Product.objects.filter(stock__gt=0).distinct()
+
+    print(f"DEBUG: Initial products count: {products.count()}")
 
     if category_id:
         category = get_object_or_404(Category, id=category_id)
+        # Filter by category
         products = products.filter(category=category)
+        print(f"DEBUG: After category filter: {products.count()}")
+
+    # Check for duplicates
+    product_ids = [p.id for p in products]
+    unique_ids = set(product_ids)
+    if len(product_ids) != len(unique_ids):
+        print(f"DEBUG: DUPLICATES FOUND! Total: {len(product_ids)}, Unique: {len(unique_ids)}")
+        # Remove duplicates by using distinct()
+        products = products.distinct()
+
     return render(request, 'product_list.html', {
         'products': products,
         'categories': categories,
-        'category': category})
+        'category': category
+    })
 
 
 def product_detail(request, product_id):
@@ -42,10 +68,15 @@ def register(request):
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            messages.success(request, 'Account successfully created.')
-            return redirect('home')
+            try:
+                user = form.save()
+                login(request, user)
+                messages.success(request, 'Account successfully created.')
+                return redirect('home')
+            except Exception as e:
+                messages.error(request, f'Error creating account: {str(e)}')
+        else:
+            messages.error(request, 'Please correct the error below.')
     else:
         form = UserRegisterForm()
     return render(request, 'register.html', {'form': form})
@@ -169,6 +200,7 @@ def checkout(request):
         'form': form
     })
 
+
 @login_required
 def order_success(request, order_id):
     print(f"DEBUG: order_success view called with order_id {order_id}")
@@ -180,6 +212,7 @@ def order_success(request, order_id):
         print(f"DEBUG: Error in order_success: {e}")
         messages.error(request, f'Order not found: {e}')
         return redirect('home')
+
 
 def custom_logout(request):
     auth_logout(request)
@@ -197,31 +230,32 @@ def admin_dashboard(request):
     total_orders = Order.objects.count()
     total_revenue = Order.objects.aggregate(total=Sum('total_amount'))['total'] or 0
     total_customers = User.objects.filter(is_staff=False).count()
+    total_products = Product.objects.count()
 
     # Recent orders
     recent_orders = Order.objects.select_related('user').prefetch_related('items').order_by('-created_at')[:10]
 
-    # Sales data for chart (last 7 days)
-    today = timezone.now().date()
-    last_week = today - timedelta(days=7)
+    # Additional stats
+    categories = Category.objects.all()
+    active_carts = Cart.objects.count()
 
-    daily_sales = Order.objects.filter(
-        created_atdategte=last_week
-    ).values('created_at__date').annotate(
-        total=Sum('total_amount'),
-        count=Count('id')
-    ).order_by('created_at__date')
+    # Today's orders
+    from datetime import date
+    today = date.today()
+    today_orders = Order.objects.filter(created_at__date=today).count()
 
     context = {
         'total_orders': total_orders,
         'total_revenue': total_revenue,
         'total_customers': total_customers,
+        'total_products': total_products,
         'recent_orders': recent_orders,
-        'daily_sales': list(daily_sales),
+        'categories': categories,
+        'active_carts': active_carts,
+        'today_orders': today_orders,
     }
 
     return render(request, 'admin_dashboard.html', context)
-
 
 @login_required
 def order_history(request):
