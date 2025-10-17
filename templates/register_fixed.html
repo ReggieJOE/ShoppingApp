@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - ReggieMercy{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-user-plus"></i> Join ReggieMercy</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" id="registrationForm">
+                    {% csrf_token %}
+
+                    {% if messages %}
+                    <div class="messages mb-3">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                            <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-triangle{% endif %}"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i> Please correct the errors below.
+                    </div>
+                    {% endif %}
+
+                    <!-- Username Field -->
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label">
+                            <i class="fas fa-user"></i> Username
+                        </label>
+                        <input type="text" name="username" class="form-control" id="id_username"
+                               placeholder="Choose a username" required
+                               value="{{ form.username.value|default:'' }}">
+                        {% if form.username.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in form.username.errors %}
+                            <i class="fas fa-exclamation-circle"></i> {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Email Field -->
+                    <div class="mb-3">
+                        <label for="id_email" class="form-label">
+                            <i class="fas fa-envelope"></i> Email Address
+                        </label>
+                        <input type="email" name="email" class="form-control" id="id_email"
+                               placeholder="Enter your email address" required
+                               value="{{ form.email.value|default:'' }}">
+                        {% if form.email.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in form.email.errors %}
+                            <i class="fas fa-exclamation-circle"></i> {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="mb-3">
+                        <label for="password1" class="form-label">
+                            <i class="fas fa-lock"></i> Password
+                        </label>
+                        <input type="password" name="password1" class="form-control" id="password1"
+                               placeholder="Create a strong password" required>
+
+                        <!-- Simple Password Requirements -->
+                        <div class="password-requirements mt-3">
+                            <small class="form-text text-muted fw-bold">Password Requirements:</small>
+                            <ul class="list-unstyled mt-2 small">
+                                <li>• At least 8 characters long</li>
+                                <li>• Include uppercase and lowercase letters</li>
+                                <li>• Include numbers and special characters</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Confirm Password Field -->
+                    <div class="mb-4">
+                        <label for="password2" class="form-label">
+                            <i class="fas fa-lock"></i> Confirm Password
+                        </label>
+                        <input type="password" name="password2" class="form-control" id="password2"
+                               placeholder="Confirm your password" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 btn-lg">
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </button>
+                </form>
+
+                <div class="mt-4 text-center">
+                    <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .password-requirements {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+    }
+
+    .card {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: none;
+        border-radius: 12px;
+    }
+
+    .card-header {
+        border-radius: 12px 12px 0 0 !important;
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        border-radius: 8px;
+        padding: 12px;
+        font-weight: 600;
+    }
+
+    .btn-success:hover {
+        background: linear-gradient(135deg, #218838 0%, #1ba87e 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+    }
+</style>
+
+<script>
+    // Simple, reliable password match check
+    document.addEventListener('DOMContentLoaded', function () {
+        const password1 = document.getElementById('password1');
+        const password2 = document.getElementById('password2');
+        const form = document.getElementById('registrationForm');
+
+        if (form && password1 && password2) {
+            form.addEventListener('submit', function (e) {
+                // Check if passwords match
+                if (password1.value !== password2.value) {
+                    e.preventDefault();
+                    alert('Passwords do not match! Please make sure both passwords are the same.');
+                    password2.focus();
+                    return false;
+                }
+
+                // Basic password length check
+                if (password1.value.length < 8) {
+                    e.preventDefault();
+                    alert('Password must be at least 8 characters long.');
+                    password1.focus();
+                    return false;
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

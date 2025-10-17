@@ -10,6 +10,7 @@ from django.db.models import Sum, Count
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.models import User
+import logging
 
 
 def home(request):
@@ -61,8 +62,12 @@ def product_detail(request, product_id):
     return render(request, 'product_detail.html', {'product': product})
 
 
+logger = logging.getLogger(__name__)
+
+
 def register(request):
     print("DEBUG: Register view accessed")
+    logger.info("Register view accessed - Method: %s", request.method)
 
     if request.user.is_authenticated:
         messages.info(request, 'You are already logged in!')
@@ -70,30 +75,35 @@ def register(request):
 
     if request.method == 'POST':
         print("DEBUG: POST request to register")
+        logger.info("POST request to register")
         form = UserRegisterForm(request.POST)
         if form.is_valid():
             print("DEBUG: Form is valid, creating user")
+            logger.info("Form is valid, creating user")
             try:
                 user = form.save()
                 print(f"DEBUG: User created: {user.username}")
+                logger.info("User created successfully: %s", user.username)
                 login(request, user)
                 messages.success(request, f'Account created successfully! Welcome, {user.username}!')
                 return redirect('home')
             except Exception as e:
                 print(f"DEBUG: Error creating user: {str(e)}")
+                logger.error("Error creating user: %s", str(e))
                 messages.error(request, f'Error creating account: {str(e)}')
         else:
             print(f"DEBUG: Form errors: {form.errors}")
+            logger.warning("Form errors: %s", form.errors)
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f'{field}: {error}')
     else:
         form = UserRegisterForm()
         print("DEBUG: GET request - showing registration form")
+        logger.info("GET request - showing registration form")
 
-    return render(request, 'register.html', {'form': form})
-
-
+    # Use the fixed template
+    return render(request, 'register_fixed.html', {'form': form})
 @login_required
 def view_cart(request):
     cart, created = Cart.objects.get_or_create(user=request.user)
