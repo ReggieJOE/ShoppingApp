@@ -1,227 +1,61 @@
-<style>
-    .requirement-icon {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 12px;
-        font-weight: bold;
-        background-color: #6c757d;
-        color: white;
-    }
+{% extends 'base.html' %}
 
-    .requirement-icon.valid {
-        background-color: #28a745;
-    }
+{% block title %}Register - ReggieMercy{% endblock %}
 
-    .requirement-icon.invalid {
-        background-color: #dc3545;
-    }
-
-    .requirement-icon.pending {
-        background-color: #6c757d;
-    }
-
-    .password-requirements small {
-        transition: color 0.3s ease;
-    }
-
-    .requirement-met {
-        color: #28a745;
-        font-weight: 500;
-    }
-
-    .requirement-not-met {
-        color: #dc3545;
-        font-weight: 500;
-    }
-
-    .password-requirements .text-muted {
-        color: #6c757d !important;
-    }
-</style>
-
-<script>
-    function checkPasswordStrength(password) {
-        const requirements = {
-            length: password.length >= 8,
-            uppercase: /[A-Z]/.test(password),
-            lowercase: /[a-z]/.test(password),
-            number: /[0-9]/.test(password),
-            special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
-        };
-
-        // Update requirement icons
-        updateRequirementIcon('length', requirements.length);
-        updateRequirementIcon('uppercase', requirements.uppercase);
-        updateRequirementIcon('lowercase', requirements.lowercase);
-        updateRequirementIcon('number', requirements.number);
-        updateRequirementIcon('special', requirements.special);
-
-        // Calculate strength score
-        let strength = 0;
-        const totalRequirements = Object.keys(requirements).length;
-        const metRequirements = Object.values(requirements).filter(Boolean).length;
-        strength = (metRequirements / totalRequirements) * 100;
-
-        // Update strength bar and text
-        const strengthBar = document.getElementById('password-strength-bar');
-        const strengthText = document.getElementById('password-strength-text');
-
-        if (strengthBar) {
-            strengthBar.style.width = strength + '%';
-        }
-
-        if (strengthText) {
-            if (strength === 0) {
-                strengthBar.className = 'progress-bar';
-                strengthText.textContent = 'None';
-                strengthText.className = 'fw-bold text-muted';
-            } else if (strength <= 40) {
-                strengthBar.className = 'progress-bar bg-danger';
-                strengthText.textContent = 'Weak';
-                strengthText.className = 'fw-bold text-danger';
-            } else if (strength <= 70) {
-                strengthBar.className = 'progress-bar bg-warning';
-                strengthText.textContent = 'Fair';
-                strengthText.className = 'fw-bold text-warning';
-            } else if (strength <= 90) {
-                strengthBar.className = 'progress-bar bg-info';
-                strengthText.textContent = 'Good';
-                strengthText.className = 'fw-bold text-info';
-            } else {
-                strengthBar.className = 'progress-bar bg-success';
-                strengthText.textContent = 'Strong';
-                strengthText.className = 'fw-bold text-success';
-            }
-        }
-    }
-
-    function updateRequirementIcon(type, met) {
-        const icon = document.getElementById('req-' + type + '-icon');
-        if (!icon) return;
-
-        const textElement = icon.parentNode.querySelector('small');
-
-        if (met) {
-            icon.className = 'requirement-icon valid';
-            icon.textContent = '✓';
-            if (textElement) {
-                textElement.classList.add('requirement-met');
-                textElement.classList.remove('requirement-not-met');
-            }
-        } else {
-            icon.className = 'requirement-icon invalid';
-            icon.textContent = '✗';
-            if (textElement) {
-                textElement.classList.add('requirement-not-met');
-                textElement.classList.remove('requirement-met');
-            }
-        }
-    }
-
-    function checkPasswordMatch() {
-        const password1 = document.getElementById('password1');
-        const password2 = document.getElementById('password2');
-        const matchIndicator = document.getElementById('password-match');
-        const matchIcon = document.getElementById('req-match-icon');
-
-        if (!password1 || !password2 ||
-        !matchIndicator || !matchIcon
-    )
-        return;
-
-        const p1 = password1.value;
-        const p2 = password2.value;
-        const matchText = matchIcon.parentNode.querySelector('small');
-
-        if (p2 === '') {
-            matchIndicator.style.display = 'none';
-            matchIcon.className = 'requirement-icon pending';
-            matchIcon.textContent = '◯';
-            if (matchText) {
-                matchText.classList.remove('requirement-met', 'requirement-not-met');
-            }
-            return;
-        }
-
-        matchIndicator.style.display = 'block';
-        if (p1 === p2 && p1 !== '') {
-            matchIndicator.innerHTML = '<i class="fas fa-check text-success"></i> <span class="text-success">Passwords match!</span>';
-            matchIcon.className = 'requirement-icon valid';
-            matchIcon.textContent = '✓';
-            if (matchText) {
-                matchText.classList.add('requirement-met');
-                matchText.classList.remove('requirement-not-met');
-            }
-        } else {
-            matchIndicator.innerHTML = '<i class="fas fa-times text-danger"></i> <span class="text-danger">Passwords do not match</span>';
-            matchIcon.className = 'requirement-icon invalid';
-            matchIcon.textContent = '✗';
-            if (matchText) {
-                matchText.classList.add('requirement-not-met');
-                matchText.classList.remove('requirement-met');
-            }
-        }
-    }
-
-    // Initialize when page loads
-    document.addEventListener('DOMContentLoaded', function () {
-        // Set up event listeners
-        const password1 = document.getElementById('password1');
-        const password2 = document.getElementById('password2');
-        const registrationForm = document.getElementById('registrationForm');
-
-        if (password1) {
-            password1.addEventListener('input', function () {
-                checkPasswordStrength(this.value);
-                checkPasswordMatch();
-            });
-        }
-
-        if (password2) {
-            password2.addEventListener('input', checkPasswordMatch);
-        }
-
-        if (registrationForm) {
-            registrationForm.addEventListener('submit', function (e) {
-                const p1 = password1 ? password1.value : '';
-                const p2 = password2 ? password2.value : '';
-
-                if (p1 !== p2) {
-                    e.preventDefault();
-                    alert('Please make sure your passwords match!');
-                    if (password2) {
-                        password2.focus();
-                    }
-                    return false;
-                }
-
-                // Additional password strength check
-                const requirements = {
-                    length: p1.length >= 8,
-                    uppercase: /[A-Z]/.test(p1),
-                    lowercase: /[a-z]/.test(p1),
-                    number: /[0-9]/.test(p1),
-                    special: /[!@#$%^&*(),.?":{}|<>]/.test(p1)
-                };
-
-                const metRequirements = Object.values(requirements).filter(Boolean).length;
-                if (metRequirements < 3) {
-                    e.preventDefault();
-                    alert('Please choose a stronger password that meets more requirements.');
-                    if (password1) {
-                        password1.focus();
-                    }
-                    return false;
-                }
-            });
-        }
-
-        // Initial state
-        checkPasswordStrength('');
-        checkPasswordMatch();
-    });
-</script>
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-user-plus"></i> Join ReggieMercy</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i> Please correct the errors below.
+                        {{ form.errors }}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Simple form without JavaScript -->
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input type="text" name="username" class="form-control" required 
+                               value="{{ form.username.value|default:'' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" required
+                               value="{{ form.email.value|default:'' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password1" class="form-control" required>
+                        <small class="form-text text-muted">
+                            Your password must contain at least 8 characters, including uppercase, lowercase, numbers, and special characters.
+                        </small>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Confirm Password</label>
+                        <input type="password" name="password2" class="form-control" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success w-100 btn-lg">
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </button>
+                </form>
+                
+                <div class="mt-4 text-center">
+                    <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+
+{% block title %}Order History - {{ user_profile.username }} - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">
+                <i class="fas fa-history text-primary me-2"></i>
+                Order History: {{ user_profile.username }}
+            </h1>
+            <p class="text-muted mb-0">Customer order details and purchase history</p>
+        </div>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <!-- User Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Orders
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_orders }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total Spent
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">Ghc. {{ total_spent|floatformat:0 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Avg Order Value
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">Ghc. {{ avg_order_value|floatformat:0 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Member Since
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ user_profile.date_joined|date:"M d, Y" }}</div>
+                            </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Information -->
+    <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-white">
+            <h6 class="m-0 font-weight-bold">
+                <i class="fas fa-user me-1"></i> Customer Information
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Username:</strong> {{ user_profile.username }}</p>
+                    <p><strong>Email:</strong> {{ user_profile.email }}</p>
+                    <p><strong>Full Name:</strong> {{ user_profile.first_name }} {{ user_profile.last_name }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Last Login:</strong> {{ user_profile.last_login|date:"M d, Y H:i" }}</p>
+                    <p><strong>Account Status:</strong>
+                        <span class="badge {% if user_profile.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                            {{ user_profile.is_active|yesno:"Active,Inactive" }}
+                        </span>
+                    </p>
+                    <p><strong>Staff Status:</strong>
+                        <span class="badge {% if user_profile.is_staff %}bg-info{% else %}bg-secondary{% endif %}">
+                            {{ user_profile.is_staff|yesno:"Staff,Regular User" }}
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold">
+                <i class="fas fa-receipt me-1"></i> Order History ({{ orders.count }} orders)
+            </h6>
+        </div>
+        <div class="card-body">
+            {% if orders %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="ordersTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Items</th>
+                            <th>Total Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td>
+                                <strong>#{{ order.id }}</strong>
+                            </td>
+                            <td>{{ order.created_at|date:"M d, Y H:i" }}</td>
+                            <td>
+                                {% for item in order.items.all %}
+                                <span class="badge bg-secondary me-1">
+                                    {{ item.quantity }}x {{ item.product.name }}
+                                </span>
+                                {% endfor %}
+                            </td>
+                            <td class="fw-bold text-success">Ghc. {{ order.total_amount }}</td>
+                            <td>
+                                <span class="badge
+                                    {% if order.status == 'completed' %}bg-success
+                                    {% elif order.status == 'pending' %}bg-warning
+                                    {% elif order.status == 'cancelled' %}bg-danger
+                                    {% else %}bg-info{% endif %}">{{ order.status|title }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No Orders Found</h5>
+                <p class="text-muted">This customer hasn't placed any orders yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.table-responsive {
+    border-radius: 8px;
+}
+
+.card {
+    border: none;
+    border-radius: 12px;
+}
+
+.card-header {
+    border-radius: 12px 12px 0 0 !important;
+}
+
+.border-left-primary { border-left: 4px solid #4e73df !important; }
+.border-left-success { border-left: 4px solid #1cc88a !important; }
+.border-left-info { border-left: 4px solid #36b9cc !important; }
+.border-left-warning { border-left: 4px solid #f6c23e !important; }
+</style>
+{% endblock %}

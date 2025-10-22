@@ -68,7 +68,7 @@
                         <small class="text-muted">+{{ order.items.count|add:"-2" }} more</small>
                         {% endif %}
                     </td>
-                    <td>Rp. {{ order.total_amount }}</td>
+                    <td>Ghc. {{ order.total_amount }}</td>
                     <td>
                             <span class="badge 
                                 {% if order.status == 'delivered' %}bg-success
@@ -137,16 +137,16 @@
                                         {% for item in order.items.all %}
                                         <tr>
                                             <td>{{ item.product.name }}</td>
-                                            <td>Rp. {{ item.price }}</td>
+                                            <td>Ghc. {{ item.price }}</td>
                                             <td>{{ item.quantity }}</td>
-                                            <td>Rp. {{ item.get_total_price }}</td>
+                                            <td>Ghc. {{ item.get_total_price }}</td>
                                         </tr>
                                         {% endfor %}
                                         </tbody>
                                         <tfoot>
                                         <tr>
                                             <td colspan="3" class="text-end"><strong>Grand Total:</strong></td>
-                                            <td><strong>Rp. {{ order.total_amount }}</strong></td>
+                                            <td><strong>Ghc. {{ order.total_amount }}</strong></td>
                                         </tr>
                                         </tfoot>
                                     </table>

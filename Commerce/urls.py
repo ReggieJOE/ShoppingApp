@@ -1,6 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
+from .views import admin_dashboard, user_order_history, order_history, customer_list, admin_product_detail, admin_products
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -20,8 +21,12 @@ urlpatterns = [
     path('checkout/', views.checkout, name='checkout'),
     path('order/success/<int:order_id>/', views.order_success, name='order_success'),
 
-
-    path('admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
-    path('admin/orders/', views.order_history, name='order_history'),
-    path('admin/customers/', views.customer_list, name='customer_list'),
+    # Admin Dashboard URLs
+    path('dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('dashboard/customers/', views.customer_list, name='customer_list'),
+    path('dashboard/user/<int:user_id>/orders/', views.user_order_history, name='user_order_history'),
+    path('dashboard/orders/', views.order_history, name='order_history'),
+    path('dashboard/products/', views.admin_products, name='admin_products'),
+    path('dashboard/products/<int:product_id>/', views.admin_product_detail, name='admin_product_detail'),
+    path('dashboard/products/add/', views.admin_product_detail, name='admin_product_add'),
 ]

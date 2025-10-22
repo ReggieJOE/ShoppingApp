@@ -178,6 +178,7 @@
 </head>
 <body>
 <!-- Navigation -->
+<!-- Navigation -->
 <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
         <a class="navbar-brand" href="{% url 'home' %}">
@@ -200,16 +201,10 @@
                         <i class="fas fa-store me-1"></i>Products
                     </a>
                 </li>
-                {% if user.is_staff %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'admin_dashboard' %}">
-                        <i class="fas fa-chart-line me-1"></i>Admin Dashboard
-                    </a>
-                </li>
-                {% endif %}
             </ul>
 
             <div class="navbar-nav">
+                <!-- Cart Link (always visible for authenticated users) -->
                 {% if user.is_authenticated %}
                 <a class="nav-link" href="{% url 'view_cart' %}">
                     <i class="fas fa-shopping-cart me-1"></i> Cart
@@ -217,15 +212,50 @@
                     <span class="badge bg-warning">{{ cart_items_count }}</span>
                     {% endif %}
                 </a>
+                {% endif %}
+
+                <!-- Admin Dropdown (only for staff) -->
+                {% if user.is_staff %}
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-shield me-1"></i> Admin
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{% url 'admin_dashboard' %}">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a></li>
+                        <li><a class="dropdown-item" href="{% url 'admin_products' %}">
+                            <i class="fas fa-boxes me-2"></i>Products
+                        </a></li>
+                        <li><a class="dropdown-item" href="{% url 'customer_list' %}">
+                            <i class="fas fa-users me-2"></i>Customers
+                        </a></li>
+                        <li><a class="dropdown-item" href="{% url 'order_history' %}">
+                            <i class="fas fa-history me-2"></i>Orders
+                        </a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="/admin/">
+                            <i class="fas fa-cog me-2"></i>Django Admin
+                        </a></li>
+                    </ul>
+                </div>
+                {% endif %}
+
+                <!-- User Auth Links -->
+                {% if user.is_authenticated %}
                 <div class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                         <i class="fas fa-user me-1"></i> {{ user.username }}
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-user-circle me-2"></i>Profile</a></li>
-
-                        Reginald Gwira, [15/10/2025 14:23]
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-history me-2"></i>Order History</a></li>
+                        <li><a class="dropdown-item" href="#">
+                            <i class="fas fa-user-circle me-2"></i>Profile
+                        </a></li>
+                        <li><a class="dropdown-item" href="#">
+                            <i class="fas fa-history me-2"></i>Order History
+                        </a></li>
                         <li>
                             <hr class="dropdown-divider">
                         </li>
@@ -251,7 +281,6 @@
         </div>
     </div>
 </nav>
-
 <!-- Main Content -->
 <main class="container my-4">
     {% if messages %}

@@ -4,13 +4,15 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
 from .models import Product, Category, Cart, CartItem, Order, OrderItem
-from .forms import UserRegisterForm, CheckoutForm
+from .forms import UserRegisterForm, CheckoutForm, ProductForm
 from django.contrib.auth import logout as auth_logout
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Max, Q
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.models import User
 import logging
+
+logger = logging.getLogger(__name__)
 
 
 def home(request):
@@ -62,9 +64,6 @@ def product_detail(request, product_id):
     return render(request, 'product_detail.html', {'product': product})
 
 
-logger = logging.getLogger(__name__)
-
-
 def register(request):
     print("DEBUG: Register view accessed")
     logger.info("Register view accessed - Method: %s", request.method)
@@ -104,13 +103,13 @@ def register(request):
 
     # Use the fixed template
     return render(request, 'register_fixed.html', {'form': form})
+
+
 @login_required
 def view_cart(request):
     cart, created = Cart.objects.get_or_create(user=request.user)
-    return render(request, 'cart.html', {'cart': cart})
+    return (render(request, 'cart.html', {'cart': cart}))
 
-
-@login_required
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     cart, created = Cart.objects.get_or_create(user=request.user)
@@ -216,7 +215,7 @@ def checkout(request):
     else:
         form = CheckoutForm()
         print("DEBUG: GET request - showing checkout form")
-
+    # FIXED: Proper indentation for return statement
     return render(request, 'checkout.html', {
         'cart': cart,
         'form': form
@@ -242,12 +241,20 @@ def custom_logout(request):
     return redirect('home')
 
 
-@login_required
-def admin_dashboard(request):
-    if not request.user.is_staff:
-        messages.error(request, 'Access denied. Admin privileges required.')
-        return redirect('home')
+# FIXED: Added staff_required decorator function
+def staff_required(function=None):
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_staff:
+            messages.error(request, 'Access denied. Admin privileges required.')
+            return redirect('home')
+        return function(request, *args, **kwargs)
 
+    return wrapper
+
+
+@login_required
+@staff_required
+def admin_dashboard(request):
     # Statistics
     total_orders = Order.objects.count()
     total_revenue = Order.objects.aggregate(total=Sum('total_amount'))['total'] or 0
@@ -255,7 +262,17 @@ def admin_dashboard(request):
     total_products = Product.objects.count()
 
     # Recent orders
-    recent_orders = Order.objects.select_related('user').prefetch_related('items').order_by('-created_at')[:10]
+    recent_orders = Order.objects.select_related('user').prefetch_related('items__product').order_by(
+        '-created_at')[:10]
+
+    # Recent users and top customers
+    recent_users = User.objects.filter(is_staff=False).order_by('-date_joined')[:5]
+    top_customers = User.objects.filter(
+        order__isnull=False
+    ).annotate(
+        total_orders=Count('order'),
+        total_spent=Sum('order__total_amount')
+    ).order_by('-total_spent')[:5]
 
     # Additional stats
     categories = Category.objects.all()
@@ -266,52 +283,252 @@ def admin_dashboard(request):
     today = date.today()
     today_orders = Order.objects.filter(created_at__date=today).count()
 
+    # Low stock products
+    low_stock_products = Product.objects.filter(stock__lt=10)[:5]
+
     context = {
         'total_orders': total_orders,
         'total_revenue': total_revenue,
         'total_customers': total_customers,
         'total_products': total_products,
         'recent_orders': recent_orders,
+        'recent_users': recent_users,
+        'top_customers': top_customers,
         'categories': categories,
         'active_carts': active_carts,
         'today_orders': today_orders,
+        'low_stock_products': low_stock_products,
     }
 
     return render(request, 'admin_dashboard.html', context)
 
 
 @login_required
-def order_history(request):
-    if not request.user.is_staff:
-        messages.error(request, 'Access denied. Admin privileges required.')
-        return redirect('home')
+@staff_required
+def user_order_history(request, user_id):
+    """View detailed order history for a specific user"""
+    try:
+        user = User.objects.get(id=user_id)
+        orders = Order.objects.filter(user=user).select_related('user').prefetch_related(
+            'items__product').order_by('-created_at')
 
-    orders = Order.objects.select_related('user').prefetch_related('items').order_by('-created_at')
+        # Calculate user statistics
+        total_orders = orders.count()
+        total_spent = orders.aggregate(total=Sum('total_amount'))['total'] or 0
+        avg_order_value = total_spent / total_orders if total_orders > 0 else 0
 
-    # Filtering
-    status_filter = request.GET.get('status')
-    if status_filter:
-        orders = orders.filter(status=status_filter)
+        context = {
+            'user_profile': user,
+            'orders': orders,
+            'total_orders': total_orders,
+            'total_spent': total_spent,
+            'avg_order_value': avg_order_value,
+        }
+        return render(request, 'admin/user_order_history.html', context)
 
-    context = {
-        'orders': orders,
-        'status_choices': Order.STATUS_CHOICES,
-    }
-    return render(request, 'order_history.html', context)
+    except User.DoesNotExist:
+        messages.error(request, 'User not found.')
+        return redirect('admin_dashboard')
 
 
 @login_required
+@staff_required
 def customer_list(request):
-    if not request.user.is_staff:
-        messages.error(request, 'Access denied. Admin privileges required.')
-        return redirect('home')
-
+    """View all customers with their order statistics"""
     customers = User.objects.filter(is_staff=False).annotate(
         total_orders=Count('order'),
-        total_spent=Sum('order__total_amount')
+        total_spent=Sum('order__total_amount'),
+        last_order_date=Max('order__created_at')
     ).order_by('-date_joined')
 
     context = {
         'customers': customers,
     }
-    return render(request, 'customer_list.html', context)
+    return render(request, 'admin/customer_list.html', context)
+
+
+# FIXED: Added the missing order_history view
+@login_required
+@staff_required
+def order_history(request):
+    """View all orders in the system (no user_id required)"""
+    try:
+        # Debug: Let's see what's available
+        print("DEBUG: Starting order_history view")
+
+        # Try different approaches to find the correct related name
+        orders = Order.objects.select_related('user').order_by('-created_at')
+
+        # Debug: Check the first order to see its structure
+        if orders.exists():
+            first_order = orders.first()
+            print(f"DEBUG: First order ID: {first_order.id}")
+            print(f"DEBUG: Order attributes: {dir(first_order)}")
+
+            # Try to access order items
+            try:
+                items = first_order.items.all()
+                print(f"DEBUG: Found items using 'items': {items.count()}")
+            except AttributeError:
+                print("DEBUG: 'items' relation not found")
+
+            try:
+                items = first_order.orderitem_set.all()
+                print(f"DEBUG: Found items using 'orderitem_set': {items.count()}")
+            except AttributeError:
+                print("DEBUG: 'orderitem_set' relation not found")
+
+        # Calculate statistics
+        total_orders = orders.count()
+        total_revenue = orders.aggregate(total=Sum('total_amount'))['total'] or 0
+
+        context = {
+            'orders': orders,
+            'total_orders': total_orders,
+            'total_revenue': total_revenue,
+        }
+
+        return render(request, 'admin/order_history.html', context)
+
+    except Exception as e:
+        print(f"DEBUG: Error in order_history: {e}")
+        messages.error(request, f'Error loading order history: {str(e)}')
+        return redirect('admin_dashboard')
+
+
+@login_required
+@staff_required
+def admin_dashboard(request):
+    """Admin dashboard view"""
+    try:
+        # Statistics - FIXED: Make sure we're calling count() on QuerySets, not functions
+        total_orders = Order.objects.count()  # This should be a number, not a function
+        total_revenue = Order.objects.aggregate(total=Sum('total_amount'))['total'] or 0
+        total_customers = User.objects.filter(is_staff=False).count()  # This should be a number
+        total_products = Product.objects.count()  # This should be a number
+
+        # Recent orders - FIXED: Use correct related name
+        recent_orders = Order.objects.select_related('user').order_by('-created_at')[:10]
+
+        # Recent users and top customers
+        recent_users = User.objects.filter(is_staff=False).order_by('-date_joined')[:5]
+        top_customers = User.objects.filter(
+            order__isnull=False
+        ).annotate(
+            total_orders=Count('order'),
+            total_spent=Sum('order__total_amount')
+        ).order_by('-total_spent')[:5]
+
+        # Additional stats
+        categories = Category.objects.all()
+        active_carts = Cart.objects.count()
+
+        # Today's orders
+        from datetime import date
+        today = date.today()
+        today_orders = Order.objects.filter(created_at__date=today).count()
+
+        # Low stock products
+        low_stock_products = Product.objects.filter(stock__lt=10)[:5]
+
+        context = {
+            'total_orders': total_orders,  # This should be a number
+            'total_revenue': total_revenue,
+            'total_customers': total_customers,  # This should be a number
+            'total_products': total_products,  # This should be a number
+            'recent_orders': recent_orders,
+            'recent_users': recent_users,
+            'top_customers': top_customers,
+            'categories': categories,
+            'active_carts': active_carts,
+            'today_orders': today_orders,
+            'low_stock_products': low_stock_products,
+        }
+
+        return render(request, 'admin_dashboard.html', context)
+
+    except Exception as e:
+        print(f"DEBUG: Error in admin_dashboard: {e}")
+        messages.error(request, f'Error loading dashboard: {str(e)}')
+        return redirect('home')
+
+@login_required
+@staff_required
+def admin_product_detail(request, product_id):
+    product = Product.objects.get(id=product_id)
+    if request.method == 'POST':
+        form = ProductForm(request.POST, instance=product)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Product "{product.name}" successfully updated.')
+            return redirect('admin_products')
+        else:
+            form = ProductForm(instance=product)
+        context = {
+          'product' : product,
+         'form': form,
+        }
+        return render(request, 'admin/product_detail.html', context)
+
+
+@login_required
+@staff_required
+def admin_products(request):
+    """Custom admin products view"""
+    products = Product.objects.select_related('category').all()
+
+    # Filter by category if provided
+    category_filter = request.GET.get('category')
+    if category_filter:
+        products = products.filter(category_id=category_filter)
+
+    # Search functionality
+    search_query = request.GET.get('search')
+    if search_query:
+        products = products.filter(
+            Q(name__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
+
+    categories = Category.objects.all()
+
+    context = {
+        'products': products,
+        'categories': categories,
+        'total_products': products.count(),
+        'low_stock_products': products.filter(stock__lt=10).count(),
+    }
+
+    return render(request, 'admin/admin_products.html', context)
+
+
+@login_required
+@staff_required
+def admin_product_detail(request, product_id=None):
+    """Custom admin product detail view - handles both add and edit"""
+    if product_id:
+        # Editing existing product
+        product = get_object_or_404(Product, id=product_id)
+        title = f"Edit Product: {product.name}"
+    else:
+        # Adding new product
+        product = None
+        title = "Add New Product"
+
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            saved_product = form.save()
+            action = "updated" if product_id else "created"
+            messages.success(request, f'Product "{saved_product.name}" {action} successfully!')
+            return redirect('admin_products')
+    else:
+        form = ProductForm(instance=product)
+
+    context = {
+        'product': product,
+        'form': form,
+        'title': title,
+    }
+
+    return render(request, 'admin/product_detail.html', context)

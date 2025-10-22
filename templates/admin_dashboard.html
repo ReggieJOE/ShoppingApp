@@ -60,7 +60,82 @@
         </div>
     </div>
 </div>
+<!-- Users Section -->
+<div class="row mt-4">
+    <!-- Recent Users -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header bg-info text-white">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-users me-1"></i> Recent Customers
+                </h6>
+            </div>
+            <div class="card-body">
+                {% for user in recent_users %}
+                <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                    <div class="flex-shrink-0">
+                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center"
+                             style="width: 40px; height: 40px;">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-0">{{ user.username }}</h6>
+                        <small class="text-muted">{{ user.email }}</small>
+                        <div>
+                            <small class="text-muted">Joined: {{ user.date_joined|date:"M d, Y" }}</small>
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <a href="{% url 'user_order_history' user.id %}" class="btn btn-sm btn-outline-primary">
+                            View Orders
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center">No customers yet</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 
+    <!-- Top Customers -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header bg-success text-white">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-trophy me-1"></i> Top Customers
+                </h6>
+            </div>
+            <div class="card-body">
+                {% for customer in top_customers %}
+                <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                    <div class="flex-shrink-0">
+                        <div class="bg-warning rounded-circle d-flex align-items-center justify-content-center"
+                             style="width: 40px; height: 40px;">
+                            <i class="fas fa-crown text-white"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-0">{{ customer.username }}</h6>
+                        <small class="text-muted">{{ customer.total_orders }} orders</small>
+                        <div>
+                            <strong class="text-success">Ghc. {{ customer.total_spent|default:0|floatformat:0 }}</strong>
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <a href="{% url 'user_order_history' customer.id %}" class="btn btn-sm btn-outline-success">
+                            Details
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center">No customer data yet</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
 <div class="row">
     <!-- Quick Actions -->
     <div class="col-md-4">
