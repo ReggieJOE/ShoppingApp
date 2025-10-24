@@ -5,17 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2bd4f129-6fc3-477e-ad6e-35eba9a01078" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Commerce/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/Commerce/forms.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Commerce/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/Commerce/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Commerce/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/Commerce/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/admin_dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin_dashboard.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/customer_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin/customer_list.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/home.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/order_history.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/admin/order_history.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/product_detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/product_detail.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/register.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/register_simple.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -83,6 +75,7 @@
       <workItem from="1760613472291" duration="16841000" />
       <workItem from="1761053243743" duration="1240000" />
       <workItem from="1761081030374" duration="996000" />
+      <workItem from="1761082141417" duration="6147000" />
     </task>
     <servers />
   </component>
@@ -94,7 +87,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/Commerce/urls.py</url>
-          <line>15</line>
+          <line>5</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
       </breakpoints>

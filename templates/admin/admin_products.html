@@ -1,276 +1,158 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Products | ReggieMercy Admin</title>
-    <link rel="stylesheet" href="admin products.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/a2e0e6f4b2.js" crossorigin="anonymous"></script>
-</head>
-<body>
+{% extends 'base.html' %}
+{% load static %}
 
-    <!-- Top Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark custom-nav">
-        <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="#">ReggieMercy</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="#">Products</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Customers</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Orders</a></li>
-                </ul>
-                <div class="d-flex align-items-center">
-                    <i class="fa fa-shopping-cart text-white me-3"></i>
-                    <span class="text-white fw-bold">mercy</span>
-                </div>
+{% block title %}Products - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0"><i class="fas fa-box me-2"></i>Product Management</h1>
+    <div>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-primary me-2">
+            <i class="fas fa-arrow-left me-1"></i>Dashboard
+        </a>
+        <a href="{% url 'admin_product_add' %}" class="btn btn-success">
+            <i class="fas fa-plus me-1"></i>Add Product
+        </a>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-boxes fa-2x mb-2 opacity-75"></i>
+                <h3 class="mb-1">{{ total_products }}</h3>
+                <p class="mb-0">Total Products</p>
             </div>
         </div>
-    </nav>
-
-    <!-- Main Layout -->
-    <div class="layout">
-        <!-- Left Sidebar -->
-        <aside class="sidebar">
-            <h6 class="sidebar-title mt-3">AUTHENTICATION AND AUTHORIZATION</h6>
-            <ul class="sidebar-list">
-                <li><span>Groups</span><a href="#" class="add-link">+ Add</a></li>
-                <li><span>Users</span><a href="#" class="add-link">+ Add</a></li>
-            </ul>
-
-            <h6 class="sidebar-title mt-4">COMMERCE</h6>
-            <ul class="sidebar-list">
-                <li><span>Carts</span><a href="#" class="add-link">+ Add</a></li>
-                <li><span>Categories</span><a href="#" class="add-link">+ Add</a></li>
-                <li><span>Orders</span><a href="#" class="add-link">+ Add</a></li>
-                <li class="active"><span>Products</span><a href="#" class="add-link">+ Add</a></li>
-            </ul>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="content">
-            <div class="content-header d-flex justify-content-between align-items-center flex-wrap">
-                <h4 class="fw-bold text-primary">
-                    <i class="fa fa-box me-2"></i> Select Product to Change
-                </h4>
-                <button class="btn btn-primary"><i class="fa fa-plus me-1"></i> Add Product</button>
-            </div>
-
-            <!-- Action Row -->
-            <div class="action-row mt-3 mb-3 d-flex align-items-center flex-wrap">
-                <select class="form-select w-auto me-2">
-                    <option selected>Action...</option>
-                    <option>Delete Selected</option>
-                    <option>Export</option>
-                </select>
-                <button class="btn btn-outline-primary">Go</button>
-                <span class="ms-3 text-muted small">0 of 51 selected</span>
-                <div class="ms-auto">
-                    <input type="text" placeholder="Search..." class="form-control search-input">
-                </div>
-            </div>
-
-            <!-- Product Table -->
-            <div class="table-responsive shadow-sm rounded">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-header">
-                        <tr>
-                            <th scope="col"><input type="checkbox"></th>
-                            <th scope="col">Name</th>
-                            <th scope="col">Category</th>
-                            <th scope="col">Price (GHC)</th>
-                            <th scope="col">Stock</th>
-                            <th scope="col">Created At</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><input type="checkbox"></td>
-                            <td>Airtime</td>
-                            <td>Others</td>
-                            <td>5.00</td>
-                            <td>6</td>
-                            <td>Oct 17, 2025</td>
-                        </tr>
-                        <tr>
-                            <td><input type="checkbox"></td>
-                            <td>Basketball</td>
-                            <td>Sports</td>
-                            <td>24.99</td>
-                            <td>40</td>
-                            <td>Oct 10, 2025</td>
-                        </tr>
-                        <tr>
-                            <td><input type="checkbox"></td>
-                            <td>Desk Lamp</td>
-                            <td>Home & Kitchen</td>
-                            <td>34.99</td>
-                            <td>50</td>
-                            <td>Oct 10, 2025</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </main>
-
-        <!-- Right Filter Panel -->
-        <aside class="filter-panel">
-            <div class="filter-card shadow-sm">
-                <h6 class="fw-bold text-primary mb-3">Filter</h6>
-                <div class="filter-section mb-3">
-                    <label><input type="checkbox" checked> Show counts</label>
-                </div>
-                <div class="filter-section mb-3">
-                    <h6 class="text-secondary small mb-1">By category</h6>
-                    <ul class="list-unstyled small">
-                        <li><a href="#" class="filter-link active">All</a></li>
-                        <li><a href="#" class="filter-link">Electronics</a></li>
-                        <li><a href="#" class="filter-link">Fashion</a></li>
-                        <li><a href="#" class="filter-link">Groceries</a></li>
-                        <li><a href="#" class="filter-link">Home & Kitchen</a></li>
-                        <li><a href="#" class="filter-link">Sports</a></li>
-                        <li><a href="#" class="filter-link">Others</a></li>
-                    </ul>
-                </div>
-                <div class="filter-section">
-                    <h6 class="text-secondary small mb-1">By created at</h6>
-                    <ul class="list-unstyled small">
-                        <li><a href="#" class="filter-link active">Any date</a></li>
-                        <li><a href="#" class="filter-link">Today</a></li>
-                        <li><a href="#" class="filter-link">Past 7 days</a></li>
-                        <li><a href="#" class="filter-link">This month</a></li>
-                        <li><a href="#" class="filter-link">This year</a></li>
-                    </ul>
-                </div>
-            </div>
-        </aside>
     </div>
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-exclamation-triangle fa-2x mb-2 opacity-75"></i>
+                <h3 class="mb-1">{{ low_stock_products }}</h3>
+                <p class="mb-0">Low Stock</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-tags fa-2x mb-2 opacity-75"></i>
+                <h3 class="mb-1">{{ categories.count }}</h3>
+                <p class="mb-0">Categories</p>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
-<style>
-body {
-    background-color: #f6f9fc;
-    font-family: 'Segoe UI', sans-serif;
-}
+<!-- Filters and Search -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Filter by Category</label>
+                <select class="form-select" onchange="window.location.href='?category='+this.value">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}" >{% if request.GET.category== category.id|stringformat:
+                    "i" %}selected{% endif %}>
+                    {{ category.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Search Products</label>
+                <form method="get" class="d-flex">
+                    <input type="text" name="search" class="form-control me-2"
+                           placeholder="Search by name or description..." value="{{ request.GET.search }}">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </form>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <a href="{% url 'admin_products' %}" class="btn btn-outline-secondary d-block">Clear Filters</a>
+            </div>
+        </div>
+    </div>
+</div>
 
-/* Navbar */
-.custom-nav {
-    background: linear-gradient(90deg, #0d47a1, #1976d2);
-    padding: 0.8rem 1rem;
-}
-.nav-link {
-    color: #e3f2fd !important;
-    font-weight: 500;
-}
-.nav-link.active {
-    color: #fff !important;
-    border-bottom: 2px solid #fff;
-}
-
-/* Layout */
-.layout {
-    display: grid;
-    grid-template-columns: 230px 1fr 250px;
-    gap: 20px;
-    margin: 20px;
-}
-
-/* Sidebar */
-.sidebar {
-    background: #fff;
-    border-radius: 10px;
-    padding: 15px;
-    height: fit-content;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-.sidebar-title {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #1976d2;
-    margin-bottom: 5px;
-}
-.sidebar-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-.sidebar-list li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 6px 0;
-    font-size: 0.9rem;
-    border-bottom: 1px solid #eee;
-}
-.sidebar-list li.active {
-    background-color: #e3f2fd;
-    border-radius: 5px;
-    padding-left: 8px;
-}
-.add-link {
-    color: #43a047;
-    text-decoration: none;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-.add-link:hover {
-    color: #2e7d32;
-}
-
-/* Main Content */
-.content {
-    background: #fff;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-.table-header {
-    background-color: #1976d2;
-    color: white;
-}
-.table td, .table th {
-    vertical-align: middle;
-}
-.search-input {
-    border-radius: 8px;
-}
-
-/* Filter Panel */
-.filter-panel {
-    background: #fff;
-    border-radius: 10px;
-    padding: 15px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    height: fit-content;
-}
-.filter-card {
-    background: #fff;
-}
-.filter-link {
-    color: #1976d2;
-    text-decoration: none;
-}
-.filter-link:hover {
-    text-decoration: underline;
-}
-.filter-link.active {
-    font-weight: 600;
-}
-
-/* Responsive */
-@media (max-width: 992px) {
-    .layout {
-        grid-template-columns: 1fr;
-    }
-    .sidebar, .filter-panel {
-        order: -1;
-    }
-}
-
-</style>
+<!-- Products Table -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-list me-2"></i>All Products ({{ products.count }})</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Category</th>
+                        <th>Price (GHC)</th>
+                        <th>Stock</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td>
+                            <strong>{{ product.name }}</strong>
+                            {% if product.image %}
+                            <br><small class="text-muted">Has image</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ product.category.name }}</td>
+                        <td><strong>Ghc. {{ product.price }}</strong></td>
+                        <td>
+                            {% if product.stock > 10 %}
+                            <span class="badge bg-success">{{ product.stock }}</span>
+                            {% elif product.stock > 0 %}
+                            <span class="badge bg-warning">{{ product.stock }}</span>
+                            {% else %}
+                            <span class="badge bg-danger">Out of Stock</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if product.stock > 0 %}
+                            <span class="badge bg-success">Active</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ product.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'admin_product_edit' product.id %}" class="btn btn-outline-primary" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'admin_product_edit' product.id %}" class="btn btn-outline-danger"
+                                   onclick="return confirm('Are you sure you want to delete {{ product.name }}?')" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <i class="fas fa-box fa-3x text-muted mb-3"></i>
+                            <h5>No products found</h5>
+                            <p class="text-muted">No products match your current filters.</p>
+                            <a href="{% url 'admin_product_add' %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i>Add Your First Product
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

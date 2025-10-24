@@ -1,0 +1,135 @@
+body {
+    background-color: #f6f9fc;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Navbar */
+.custom-nav {
+    background: linear-gradient(90deg, #0d47a1, #1976d2);
+    padding: 0.8rem 1rem;
+}
+
+.nav-link {
+    color: #e3f2fd !important;
+    font-weight: 500;
+}
+
+.nav-link.active {
+    color: #fff !important;
+    border-bottom: 2px solid #fff;
+}
+
+/* Layout */
+.layout {
+    display: grid;
+    grid-template-columns: 230px 1fr 250px;
+    gap: 20px;
+    margin: 20px;
+}
+
+/* Sidebar */
+.sidebar {
+    background: #fff;
+    border-radius: 10px;
+    padding: 15px;
+    height: fit-content;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #1976d2;
+    margin-bottom: 5px;
+}
+
+.sidebar-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #eee;
+}
+
+.sidebar-list li.active {
+    background-color: #e3f2fd;
+    border-radius: 5px;
+    padding-left: 8px;
+}
+
+.add-link {
+    color: #43a047;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.add-link:hover {
+    color: #2e7d32;
+}
+
+/* Main Content */
+.content {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.table-header {
+    background-color: #1976d2;
+    color: white;
+}
+
+.table td, .table th {
+    vertical-align: middle;
+}
+
+.search-input {
+    border-radius: 8px;
+}
+
+/* Filter Panel */
+.filter-panel {
+    background: #fff;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+}
+
+.filter-card {
+    background: #fff;
+}
+
+.filter-link {
+    color: #1976d2;
+    text-decoration: none;
+}
+
+.filter-link:hover {
+    text-decoration: underline;
+}
+
+.filter-link.active {
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar, .filter-panel {
+        order: -1;
+    }
+}
+

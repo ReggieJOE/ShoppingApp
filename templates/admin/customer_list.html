@@ -65,9 +65,10 @@
                             <a href="#" class="btn btn-outline-primary">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="/admin/auth/user/{{ customer.id }}/change/" class="btn btn-outline-secondary">
-                                <i class="fas fa-edit"></i>
+                            <a href="{% url 'user_order_history' customer.id %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-eye"></i>
                             </a>
+
                         </div>
                     </td>
                 </tr>

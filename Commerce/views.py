@@ -3,29 +3,34 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
-from .models import Product, Category, Cart, CartItem, Order, OrderItem
+from .models import Product, Category, Cart, CartItem, Order, OrderItem, User
 from .forms import UserRegisterForm, CheckoutForm, ProductForm
 from django.contrib.auth import logout as auth_logout
 from django.db.models import Sum, Count, Max, Q
-from django.utils import timezone
-from datetime import timedelta
-from django.contrib.auth.models import User
-import logging
-
-logger = logging.getLogger(__name__)
+from datetime import date
+from functools import wraps
 
 
+# ========== DECORATORS ==========
+def staff_required(view_func):
+    """Decorator to ensure user is staff member"""
+
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.error(request, 'Please log in to access this page.')
+            return redirect('login')
+        if not request.user.is_staff:
+            messages.error(request, 'Access denied. Admin privileges required.')
+            return redirect('home')
+        return view_func(request, *args, **kwargs)
+
+    return wrapper
+
+
+# ========== MAIN SITE VIEWS ==========
 def home(request):
     categories = Category.objects.all()
-
-    # Get featured products without duplicates
     featured_products = Product.objects.filter(stock__gt=0).distinct()[:8]
-
-    # Debug info
-    print(f"DEBUG: Found {featured_products.count()} featured products")
-    for product in featured_products:
-        print(f"DEBUG: Product: {product.name}, ID: {product.id}")
-
     return render(request, 'home.html', {
         'categories': categories,
         'featured_products': featured_products,
@@ -35,23 +40,13 @@ def home(request):
 def product_list(request, category_id=None):
     category = None
     categories = Category.objects.all()
-
-    # Start with all products that have stock
     products = Product.objects.filter(stock__gt=0)
-
-    print(f"DEBUG: Initial products count: {products.count()}")
 
     if category_id:
         category = get_object_or_404(Category, id=category_id)
-        # Filter by category
         products = products.filter(category=category)
-        print(f"DEBUG: After category filter: {products.count()}")
 
-    # Remove any potential duplicates by using distinct on ID
     products = products.distinct()
-
-    print(f"DEBUG: Final products count: {products.count()}")
-
     return render(request, 'product_list.html', {
         'products': products,
         'categories': categories,
@@ -65,51 +60,38 @@ def product_detail(request, product_id):
 
 
 def register(request):
-    print("DEBUG: Register view accessed")
-    logger.info("Register view accessed - Method: %s", request.method)
-
     if request.user.is_authenticated:
         messages.info(request, 'You are already logged in!')
         return redirect('home')
 
     if request.method == 'POST':
-        print("DEBUG: POST request to register")
-        logger.info("POST request to register")
         form = UserRegisterForm(request.POST)
         if form.is_valid():
-            print("DEBUG: Form is valid, creating user")
-            logger.info("Form is valid, creating user")
-            try:
-                user = form.save()
-                print(f"DEBUG: User created: {user.username}")
-                logger.info("User created successfully: %s", user.username)
-                login(request, user)
-                messages.success(request, f'Account created successfully! Welcome, {user.username}!')
-                return redirect('home')
-            except Exception as e:
-                print(f"DEBUG: Error creating user: {str(e)}")
-                logger.error("Error creating user: %s", str(e))
-                messages.error(request, f'Error creating account: {str(e)}')
+            user = form.save()
+            login(request, user)
+            messages.success(request, f'Account created successfully! Welcome, {user.username}!')
+            return redirect('home')
         else:
-            print(f"DEBUG: Form errors: {form.errors}")
-            logger.warning("Form errors: %s", form.errors)
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f'{field}: {error}')
     else:
         form = UserRegisterForm()
-        print("DEBUG: GET request - showing registration form")
-        logger.info("GET request - showing registration form")
 
-    # Use the fixed template
     return render(request, 'register_fixed.html', {'form': form})
 
 
 @login_required
 def view_cart(request):
     cart, created = Cart.objects.get_or_create(user=request.user)
-    return (render(request, 'cart.html', {'cart': cart}))
+    cart_items_count = cart.items.count()
+    return render(request, 'cart.html', {
+        'cart': cart,
+        'cart_items_count': cart_items_count
+    })
 
+
+@login_required
 def add_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     cart, created = Cart.objects.get_or_create(user=request.user)
@@ -152,26 +134,18 @@ def update_cart_item(request, item_id):
 def checkout(request):
     cart = get_object_or_404(Cart, user=request.user)
 
-    print(f"DEBUG: Checkout started for user {request.user.username}")
-
     if not cart.items.exists():
         messages.error(request, 'Your cart is empty!')
         return redirect('view_cart')
 
     if request.method == 'POST':
-        print("DEBUG: POST request received")
         form = CheckoutForm(request.POST)
         if form.is_valid():
-            print("DEBUG: Form is valid")
             try:
                 with transaction.atomic():
-                    # Get form data
                     shipping_address = form.cleaned_data['shipping_address']
                     payment_method = form.cleaned_data['payment_method']
 
-                    print(f"DEBUG: Creating order with shipping: {shipping_address}, payment: {payment_method}")
-
-                    # Create order
                     order = Order.objects.create(
                         user=request.user,
                         total_amount=cart.get_total_price(),
@@ -180,9 +154,6 @@ def checkout(request):
                         status='pending'
                     )
 
-                    print(f"DEBUG: Order created with ID {order.id}")
-
-                    # Create order items
                     for cart_item in cart.items.all():
                         OrderItem.objects.create(
                             order=order,
@@ -190,32 +161,19 @@ def checkout(request):
                             quantity=cart_item.quantity,
                             price=cart_item.product.price
                         )
-                        # Update stock
                         cart_item.product.stock -= cart_item.quantity
                         cart_item.product.save()
-                        print(f"DEBUG: Added {cart_item.product.name} to order")
 
-                    # Clear cart
-                    cart_items_count = cart.items.count()
                     cart.items.all().delete()
-                    print(f"DEBUG: Cleared {cart_items_count} items from cart")
-
                     messages.success(request, 'Order placed successfully!')
-                    print(f"DEBUG: Redirecting to order_success with order_id {order.id}")
                     return redirect('order_success', order_id=order.id)
-
             except Exception as e:
-                print(f"DEBUG: Exception during checkout: {str(e)}")
-                import traceback
-                print(f"DEBUG: Traceback: {traceback.format_exc()}")
                 messages.error(request, f'An error occurred while processing your order: {str(e)}')
         else:
-            print(f"DEBUG: Form errors: {form.errors}")
             messages.error(request, 'Please correct the errors below.')
     else:
         form = CheckoutForm()
-        print("DEBUG: GET request - showing checkout form")
-    # FIXED: Proper indentation for return statement
+
     return render(request, 'checkout.html', {
         'cart': cart,
         'form': form
@@ -224,15 +182,8 @@ def checkout(request):
 
 @login_required
 def order_success(request, order_id):
-    print(f"DEBUG: order_success view called with order_id {order_id}")
-    try:
-        order = get_object_or_404(Order, id=order_id, user=request.user)
-        print(f"DEBUG: Found order #{order.id} for user {request.user.username}")
-        return render(request, 'order_success.html', {'order': order})
-    except Exception as e:
-        print(f"DEBUG: Error in order_success: {e}")
-        messages.error(request, f'Order not found: {e}')
-        return redirect('home')
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    return render(request, 'order_success.html', {'order': order})
 
 
 def custom_logout(request):
@@ -241,177 +192,23 @@ def custom_logout(request):
     return redirect('home')
 
 
-# FIXED: Added staff_required decorator function
-def staff_required(function=None):
-    def wrapper(request, *args, **kwargs):
-        if not request.user.is_staff:
-            messages.error(request, 'Access denied. Admin privileges required.')
-            return redirect('home')
-        return function(request, *args, **kwargs)
-
-    return wrapper
-
-
+# ========== ADMIN VIEWS ==========
 @login_required
 @staff_required
 def admin_dashboard(request):
-    # Statistics
-    total_orders = Order.objects.count()
-    total_revenue = Order.objects.aggregate(total=Sum('total_amount'))['total'] or 0
-    total_customers = User.objects.filter(is_staff=False).count()
-    total_products = Product.objects.count()
-
-    # Recent orders
-    recent_orders = Order.objects.select_related('user').prefetch_related('items__product').order_by(
-        '-created_at')[:10]
-
-    # Recent users and top customers
-    recent_users = User.objects.filter(is_staff=False).order_by('-date_joined')[:5]
-    top_customers = User.objects.filter(
-        order__isnull=False
-    ).annotate(
-        total_orders=Count('order'),
-        total_spent=Sum('order__total_amount')
-    ).order_by('-total_spent')[:5]
-
-    # Additional stats
-    categories = Category.objects.all()
-    active_carts = Cart.objects.count()
-
-    # Today's orders
-    from datetime import date
-    today = date.today()
-    today_orders = Order.objects.filter(created_at__date=today).count()
-
-    # Low stock products
-    low_stock_products = Product.objects.filter(stock__lt=10)[:5]
-
-    context = {
-        'total_orders': total_orders,
-        'total_revenue': total_revenue,
-        'total_customers': total_customers,
-        'total_products': total_products,
-        'recent_orders': recent_orders,
-        'recent_users': recent_users,
-        'top_customers': top_customers,
-        'categories': categories,
-        'active_carts': active_carts,
-        'today_orders': today_orders,
-        'low_stock_products': low_stock_products,
-    }
-
-    return render(request, 'admin_dashboard.html', context)
-
-
-@login_required
-@staff_required
-def user_order_history(request, user_id):
-    """View detailed order history for a specific user"""
+    """Admin dashboard view - Overview with quick stats"""
     try:
-        user = User.objects.get(id=user_id)
-        orders = Order.objects.filter(user=user).select_related('user').prefetch_related(
-            'items__product').order_by('-created_at')
-
-        # Calculate user statistics
-        total_orders = orders.count()
-        total_spent = orders.aggregate(total=Sum('total_amount'))['total'] or 0
-        avg_order_value = total_spent / total_orders if total_orders > 0 else 0
-
-        context = {
-            'user_profile': user,
-            'orders': orders,
-            'total_orders': total_orders,
-            'total_spent': total_spent,
-            'avg_order_value': avg_order_value,
-        }
-        return render(request, 'admin/user_order_history.html', context)
-
-    except User.DoesNotExist:
-        messages.error(request, 'User not found.')
-        return redirect('admin_dashboard')
-
-
-@login_required
-@staff_required
-def customer_list(request):
-    """View all customers with their order statistics"""
-    customers = User.objects.filter(is_staff=False).annotate(
-        total_orders=Count('order'),
-        total_spent=Sum('order__total_amount'),
-        last_order_date=Max('order__created_at')
-    ).order_by('-date_joined')
-
-    context = {
-        'customers': customers,
-    }
-    return render(request, 'admin/customer_list.html', context)
-
-
-# FIXED: Added the missing order_history view
-@login_required
-@staff_required
-def order_history(request):
-    """View all orders in the system (no user_id required)"""
-    try:
-        # Debug: Let's see what's available
-        print("DEBUG: Starting order_history view")
-
-        # Try different approaches to find the correct related name
-        orders = Order.objects.select_related('user').order_by('-created_at')
-
-        # Debug: Check the first order to see its structure
-        if orders.exists():
-            first_order = orders.first()
-            print(f"DEBUG: First order ID: {first_order.id}")
-            print(f"DEBUG: Order attributes: {dir(first_order)}")
-
-            # Try to access order items
-            try:
-                items = first_order.items.all()
-                print(f"DEBUG: Found items using 'items': {items.count()}")
-            except AttributeError:
-                print("DEBUG: 'items' relation not found")
-
-            try:
-                items = first_order.orderitem_set.all()
-                print(f"DEBUG: Found items using 'orderitem_set': {items.count()}")
-            except AttributeError:
-                print("DEBUG: 'orderitem_set' relation not found")
-
-        # Calculate statistics
-        total_orders = orders.count()
-        total_revenue = orders.aggregate(total=Sum('total_amount'))['total'] or 0
-
-        context = {
-            'orders': orders,
-            'total_orders': total_orders,
-            'total_revenue': total_revenue,
-        }
-
-        return render(request, 'admin/order_history.html', context)
-
-    except Exception as e:
-        print(f"DEBUG: Error in order_history: {e}")
-        messages.error(request, f'Error loading order history: {str(e)}')
-        return redirect('admin_dashboard')
-
-
-@login_required
-@staff_required
-def admin_dashboard(request):
-    """Admin dashboard view"""
-    try:
-        # Statistics - FIXED: Make sure we're calling count() on QuerySets, not functions
-        total_orders = Order.objects.count()  # This should be a number, not a function
+        # Basic statistics
+        total_orders = Order.objects.count()
         total_revenue = Order.objects.aggregate(total=Sum('total_amount'))['total'] or 0
-        total_customers = User.objects.filter(is_staff=False).count()  # This should be a number
-        total_products = Product.objects.count()  # This should be a number
+        total_customers = User.objects.filter(is_staff=False).count()
+        total_products = Product.objects.count()
 
-        # Recent orders - FIXED: Use correct related name
+        # Recent data
         recent_orders = Order.objects.select_related('user').order_by('-created_at')[:10]
-
-        # Recent users and top customers
         recent_users = User.objects.filter(is_staff=False).order_by('-date_joined')[:5]
+
+        # Top customers with order stats
         top_customers = User.objects.filter(
             order__isnull=False
         ).annotate(
@@ -422,20 +219,13 @@ def admin_dashboard(request):
         # Additional stats
         categories = Category.objects.all()
         active_carts = Cart.objects.count()
-
-        # Today's orders
-        from datetime import date
-        today = date.today()
-        today_orders = Order.objects.filter(created_at__date=today).count()
-
-        # Low stock products
+        today_orders = Order.objects.filter(created_at__date=date.today()).count()
         low_stock_products = Product.objects.filter(stock__lt=10)[:5]
-
         context = {
-            'total_orders': total_orders,  # This should be a number
+            'total_orders': total_orders,
             'total_revenue': total_revenue,
-            'total_customers': total_customers,  # This should be a number
-            'total_products': total_products,  # This should be a number
+            'total_customers': total_customers,
+            'total_products': total_products,
             'recent_orders': recent_orders,
             'recent_users': recent_users,
             'top_customers': top_customers,
@@ -444,40 +234,22 @@ def admin_dashboard(request):
             'today_orders': today_orders,
             'low_stock_products': low_stock_products,
         }
-
-        return render(request, 'admin_dashboard.html', context)
+        return render(request, 'admin/admin_dashboard.html', context)
 
     except Exception as e:
-        print(f"DEBUG: Error in admin_dashboard: {e}")
         messages.error(request, f'Error loading dashboard: {str(e)}')
-        return redirect('home')
+    return redirect('home')
 
-@login_required
-@staff_required
-def admin_product_detail(request, product_id):
-    product = Product.objects.get(id=product_id)
-    if request.method == 'POST':
-        form = ProductForm(request.POST, instance=product)
-        if form.is_valid():
-            form.save()
-            messages.success(request, f'Product "{product.name}" successfully updated.')
-            return redirect('admin_products')
-        else:
-            form = ProductForm(instance=product)
-        context = {
-          'product' : product,
-         'form': form,
-        }
-        return render(request, 'admin/product_detail.html', context)
 
 
 @login_required
 @staff_required
 def admin_products(request):
-    """Custom admin products view"""
+    """Product management view with filtering and search"""
     products = Product.objects.select_related('category').all()
+    categories = Category.objects.all()
 
-    # Filter by category if provided
+    # Filter by category
     category_filter = request.GET.get('category')
     if category_filter:
         products = products.filter(category_id=category_filter)
@@ -489,8 +261,6 @@ def admin_products(request):
             Q(name__icontains=search_query) |
             Q(description__icontains=search_query)
         )
-
-    categories = Category.objects.all()
 
     context = {
         'products': products,
@@ -504,14 +274,12 @@ def admin_products(request):
 
 @login_required
 @staff_required
-def admin_product_detail(request, product_id=None):
-    """Custom admin product detail view - handles both add and edit"""
+def admin_product_edit(request, product_id=None):
+    """Handle both add and edit products"""
     if product_id:
-        # Editing existing product
         product = get_object_or_404(Product, id=product_id)
         title = f"Edit Product: {product.name}"
     else:
-        # Adding new product
         product = None
         title = "Add New Product"
 
@@ -524,11 +292,138 @@ def admin_product_detail(request, product_id=None):
             return redirect('admin_products')
     else:
         form = ProductForm(instance=product)
+        context = {
+            'product': product,
+            'form': form,
+            'title': title,
+        }
+
+        return render(request, 'admin/product_edit.html', context)
+
+
+@login_required
+@staff_required
+def admin_product_delete(request, product_id):
+    """Delete product"""
+    product = get_object_or_404(Product, id=product_id)
+    product_name = product.name
+    product.delete()
+    messages.success(request, f'Product "{product_name}" deleted successfully.')
+    return redirect('admin_products')
+
+
+@login_required
+@staff_required
+def customer_list(request):
+    """View all customers with order statistics"""
+
+    customers = User.objects.filter(is_staff=False).annotate(
+        total_orders=Count('order'),
+        total_spent=Sum('order__total_amount'),
+        last_order_date=Max('order__created_at')
+    ).order_by('-date_joined')
 
     context = {
-        'product': product,
-        'form': form,
-        'title': title,
+        'customers': customers,
+    }
+    return render(request, 'admin/customer_list.html', context)
+
+
+@login_required
+@staff_required
+def user_order_history(request, user_id):
+    """View detailed order history for a specific user"""
+    user_profile = get_object_or_404(User, id=user_id)
+    orders = Order.objects.filter(user=user_profile).select_related('user').prefetch_related(
+        'items__product').order_by('-created_at')
+
+    # Calculate user statistics
+    total_orders = orders.count()
+    total_spent = orders.aggregate(total=Sum('total_amount'))['total'] or 0
+    avg_order_value = total_spent / total_orders if total_orders > 0 else 0
+
+    context = {
+        'user_profile': user_profile,
+        'orders': orders,
+        'total_orders': total_orders,
+        'total_spent': total_spent,
+        'avg_order_value': avg_order_value,
+    }
+    return render(request, 'admin/user_order_history.html', context)
+
+
+@login_required
+@staff_required
+def order_history(request):
+    """View all orders with filtering"""
+    orders = Order.objects.select_related('user').prefetch_related('items__product').order_by('-created_at')
+
+    # Status filter
+    status_filter = request.GET.get('status')
+    if status_filter:
+        orders = orders.filter(status=status_filter)
+
+    # Calculate statistics
+    total_orders = orders.count()
+    total_revenue = orders.aggregate(total=Sum('total_amount'))['total'] or 0
+
+    context = {
+        'orders': orders,
+        'total_orders': total_orders,
+        'total_revenue': total_revenue,
+        'status_choices': Order.STATUS_CHOICES,
     }
 
-    return render(request, 'admin/product_detail.html', context)
+    return render(request, 'order_history.html', context)
+
+
+@login_required
+@staff_required
+def admin_categories(request):
+    """Category management view"""
+    categories = Category.objects.all()
+
+    if request.method == 'POST':
+        # Handle category creation
+        name = request.POST.get('name')
+        description = request.POST.get('description')
+        if name:
+            Category.objects.create(name=name, description=description)
+            messages.success(request, f'Category "{name}" created successfully!')
+            return redirect('admin_categories')
+
+    context = {
+        'categories': categories,
+    }
+    return render(request, 'admin/admin_categories.html', context)
+
+
+@login_required
+@staff_required
+def admin_category_delete(request, category_id):
+    """Delete category"""
+    category = get_object_or_404(Category, id=category_id)
+    category_name = category.name
+    category.delete()
+    messages.success(request, f'Category "{category_name}" deleted successfully.')
+    return redirect('admin_categories')
+
+
+@login_required
+@staff_required
+def update_order_status(request, order_id):
+    """Update order status"""
+    order = get_object_or_404(Order, id=order_id)
+
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        if new_status in dict(Order.STATUS_CHOICES):
+            old_status = order.get_status_display()
+            order.status = new_status
+            order.save()
+            messages.success(request,
+                             f'Order #{order.id} status updated from {old_status} to {order.get_status_display()}')
+        else:
+            messages.error(request, 'Invalid status selected.')
+
+    return redirect('order_history')
